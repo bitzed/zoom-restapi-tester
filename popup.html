@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Zoom REST API Tester</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <header class="header">
+      <h1>Zoom REST API Tester</h1>
+      <button id="settings-btn" class="icon-btn" title="Settings">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="3"></circle>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+        </svg>
+      </button>
+    </header>
+
+    <!-- Authentication Section -->
+    <section class="auth-section">
+      <h2>Authentication</h2>
+      <div id="auth-status" class="auth-status">
+        <span class="status-indicator disconnected"></span>
+        <span class="status-text">Not authenticated</span>
+      </div>
+      <div class="auth-actions">
+        <button id="auth-btn" class="btn btn-primary">Get Access Token</button>
+        <button id="clear-token-btn" class="btn btn-secondary" style="display: none;">Clear Token</button>
+      </div>
+      <div id="token-info" class="token-info" style="display: none;">
+        <div class="token-detail">
+          <span class="label">Token:</span>
+          <span id="token-preview" class="value token-preview"></span>
+        </div>
+        <div class="token-detail">
+          <span class="label">Expires:</span>
+          <span id="token-expires" class="value"></span>
+        </div>
+      </div>
+      <div id="auth-error" class="error-message" style="display: none;"></div>
+    </section>
+
+    <!-- API Test Section -->
+    <section class="api-section">
+      <h2>API Reference</h2>
+
+      <!-- Category Filter -->
+      <div class="category-filter">
+        <label for="category-select">Category:</label>
+        <select id="category-select">
+          <option value="">All Categories</option>
+        </select>
+      </div>
+
+      <!-- Search -->
+      <div class="search-box">
+        <input type="text" id="api-search" placeholder="Search APIs...">
+      </div>
+
+      <!-- API List -->
+      <div id="api-list" class="api-list"></div>
+    </section>
+
+    <!-- API Detail Panel -->
+    <div id="api-detail-panel" class="api-detail-panel" style="display: none;">
+      <div class="panel-header">
+        <button id="close-panel-btn" class="icon-btn">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+        <h3 id="panel-title"></h3>
+      </div>
+      <div class="panel-content">
+        <div id="api-detail-content"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Settings Modal -->
+  <div id="settings-modal" class="modal" style="display: none;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Settings</h2>
+        <button id="close-settings-btn" class="icon-btn">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <h3>Server-to-Server OAuth Credentials</h3>
+        <p class="help-text">Enter your Zoom Server-to-Server OAuth app credentials.</p>
+
+        <div class="form-group">
+          <label for="account-id">Account ID</label>
+          <input type="text" id="account-id" placeholder="Enter Account ID">
+        </div>
+
+        <div class="form-group">
+          <label for="client-id">Client ID</label>
+          <input type="text" id="client-id" placeholder="Enter Client ID">
+        </div>
+
+        <div class="form-group">
+          <label for="client-secret">Client Secret</label>
+          <div class="password-input">
+            <input type="password" id="client-secret" placeholder="Enter Client Secret">
+            <button id="toggle-secret" class="icon-btn" type="button">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button id="save-settings-btn" class="btn btn-primary">Save Settings</button>
+          <button id="clear-settings-btn" class="btn btn-danger">Clear All</button>
+        </div>
+
+        <div id="settings-message" class="message" style="display: none;"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="api-spec.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>
