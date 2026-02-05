@@ -8,11 +8,11 @@ chrome.runtime.onInstalled.addListener((details) => {
   } else if (details.reason === 'update') {
     console.log('Zoom REST API Tester updated to version', chrome.runtime.getManifest().version);
   }
-});
 
-// Token expiration check alarm
-chrome.alarms.create('checkTokenExpiry', {
-  periodInMinutes: 5
+  // Create token expiration check alarm
+  chrome.alarms.create('checkTokenExpiry', {
+    periodInMinutes: 5
+  });
 });
 
 chrome.alarms.onAlarm.addListener(async (alarm) => {
