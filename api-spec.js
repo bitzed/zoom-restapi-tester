@@ -1,4 +1,4 @@
-// Zoom API Specification
+// Zoom API Specification with Granular Scopes
 // Based on https://github.com/zoom/api OpenAPI spec
 
 const ZOOM_API_SPEC = {
@@ -17,7 +17,7 @@ const ZOOM_API_SPEC = {
           path: "/users",
           summary: "List users",
           description: "List all users on your Zoom account.",
-          scopes: ["user:read:admin"],
+          scopes: ["user:read:list_users:admin"],
           parameters: [
             { name: "status", in: "query", type: "string", required: false, description: "Filter by user status (active, inactive, pending)", enum: ["active", "inactive", "pending"] },
             { name: "page_size", in: "query", type: "integer", required: false, description: "Number of records per page (max 300)", default: 30 },
@@ -30,7 +30,7 @@ const ZOOM_API_SPEC = {
           path: "/users",
           summary: "Create user",
           description: "Create a new user on your Zoom account.",
-          scopes: ["user:write:admin"],
+          scopes: ["user:write:user:admin"],
           parameters: [],
           requestBody: {
             required: true,
@@ -62,7 +62,7 @@ const ZOOM_API_SPEC = {
           path: "/users/{userId}",
           summary: "Get user",
           description: "Get information about a specific user.",
-          scopes: ["user:read:admin", "user:read"],
+          scopes: ["user:read:user:admin"],
           parameters: [
             { name: "userId", in: "path", type: "string", required: true, description: "User ID or email address. Use 'me' for current user." }
           ]
@@ -72,7 +72,7 @@ const ZOOM_API_SPEC = {
           path: "/users/{userId}",
           summary: "Update user",
           description: "Update a user's profile information.",
-          scopes: ["user:write:admin", "user:write"],
+          scopes: ["user:write:user:admin"],
           parameters: [
             { name: "userId", in: "path", type: "string", required: true, description: "User ID or email address" }
           ],
@@ -100,7 +100,7 @@ const ZOOM_API_SPEC = {
           path: "/users/{userId}",
           summary: "Delete user",
           description: "Delete a user from your Zoom account.",
-          scopes: ["user:write:admin"],
+          scopes: ["user:write:user:admin"],
           parameters: [
             { name: "userId", in: "path", type: "string", required: true, description: "User ID or email address" },
             { name: "action", in: "query", type: "string", required: false, description: "Delete action (delete, disassociate)", enum: ["delete", "disassociate"] }
@@ -111,7 +111,7 @@ const ZOOM_API_SPEC = {
           path: "/users/{userId}/settings",
           summary: "Get user settings",
           description: "Retrieve a user's settings.",
-          scopes: ["user:read:admin", "user:read"],
+          scopes: ["user:read:settings:admin"],
           parameters: [
             { name: "userId", in: "path", type: "string", required: true, description: "User ID or email address" },
             { name: "option", in: "query", type: "string", required: false, description: "Settings option", enum: ["meeting_authentication", "recording_authentication"] }
@@ -122,7 +122,7 @@ const ZOOM_API_SPEC = {
           path: "/users/{userId}/settings",
           summary: "Update user settings",
           description: "Update a user's settings.",
-          scopes: ["user:write:admin", "user:write"],
+          scopes: ["user:write:settings:admin"],
           parameters: [
             { name: "userId", in: "path", type: "string", required: true, description: "User ID or email address" }
           ],
@@ -153,7 +153,7 @@ const ZOOM_API_SPEC = {
           path: "/users/{userId}/meetings",
           summary: "List meetings",
           description: "List all meetings scheduled by or for a user.",
-          scopes: ["meeting:read:admin", "meeting:read"],
+          scopes: ["meeting:read:list_meetings:admin"],
           parameters: [
             { name: "userId", in: "path", type: "string", required: true, description: "User ID or email address" },
             { name: "type", in: "query", type: "string", required: false, description: "Meeting type filter", enum: ["scheduled", "live", "upcoming", "upcoming_meetings", "previous_meetings"] },
@@ -166,7 +166,7 @@ const ZOOM_API_SPEC = {
           path: "/users/{userId}/meetings",
           summary: "Create meeting",
           description: "Create a meeting for a user.",
-          scopes: ["meeting:write:admin", "meeting:write"],
+          scopes: ["meeting:write:meeting:admin"],
           parameters: [
             { name: "userId", in: "path", type: "string", required: true, description: "User ID or email address" }
           ],
@@ -205,7 +205,7 @@ const ZOOM_API_SPEC = {
           path: "/meetings/{meetingId}",
           summary: "Get meeting",
           description: "Retrieve details of a meeting.",
-          scopes: ["meeting:read:admin", "meeting:read"],
+          scopes: ["meeting:read:meeting:admin"],
           parameters: [
             { name: "meetingId", in: "path", type: "integer", required: true, description: "Meeting ID" },
             { name: "occurrence_id", in: "query", type: "string", required: false, description: "Occurrence ID for recurring meeting" },
@@ -217,7 +217,7 @@ const ZOOM_API_SPEC = {
           path: "/meetings/{meetingId}",
           summary: "Update meeting",
           description: "Update meeting details.",
-          scopes: ["meeting:write:admin", "meeting:write"],
+          scopes: ["meeting:write:meeting:admin"],
           parameters: [
             { name: "meetingId", in: "path", type: "integer", required: true, description: "Meeting ID" },
             { name: "occurrence_id", in: "query", type: "string", required: false, description: "Occurrence ID for recurring meeting" }
@@ -244,7 +244,7 @@ const ZOOM_API_SPEC = {
           path: "/meetings/{meetingId}",
           summary: "Delete meeting",
           description: "Delete a meeting.",
-          scopes: ["meeting:write:admin", "meeting:write"],
+          scopes: ["meeting:write:meeting:admin"],
           parameters: [
             { name: "meetingId", in: "path", type: "integer", required: true, description: "Meeting ID" },
             { name: "occurrence_id", in: "query", type: "string", required: false, description: "Occurrence ID" },
@@ -256,7 +256,7 @@ const ZOOM_API_SPEC = {
           path: "/meetings/{meetingId}/status",
           summary: "Update meeting status",
           description: "End a meeting for a host.",
-          scopes: ["meeting:write:admin", "meeting:write"],
+          scopes: ["meeting:write:meeting:admin"],
           parameters: [
             { name: "meetingId", in: "path", type: "integer", required: true, description: "Meeting ID" }
           ],
@@ -275,7 +275,7 @@ const ZOOM_API_SPEC = {
           path: "/meetings/{meetingId}/registrants",
           summary: "List meeting registrants",
           description: "List all registrants for a meeting.",
-          scopes: ["meeting:read:admin", "meeting:read"],
+          scopes: ["meeting:read:list_registrants:admin"],
           parameters: [
             { name: "meetingId", in: "path", type: "integer", required: true, description: "Meeting ID" },
             { name: "occurrence_id", in: "query", type: "string", required: false, description: "Occurrence ID" },
@@ -289,7 +289,7 @@ const ZOOM_API_SPEC = {
           path: "/meetings/{meetingId}/registrants",
           summary: "Add meeting registrant",
           description: "Register a participant for a meeting.",
-          scopes: ["meeting:write:admin", "meeting:write"],
+          scopes: ["meeting:write:registrant:admin"],
           parameters: [
             { name: "meetingId", in: "path", type: "integer", required: true, description: "Meeting ID" },
             { name: "occurrence_ids", in: "query", type: "string", required: false, description: "Occurrence IDs (comma-separated)" }
@@ -313,7 +313,7 @@ const ZOOM_API_SPEC = {
           path: "/past_meetings/{meetingId}",
           summary: "Get past meeting details",
           description: "Get details of a past meeting.",
-          scopes: ["meeting:read:admin", "meeting:read"],
+          scopes: ["meeting:read:past_meeting:admin"],
           parameters: [
             { name: "meetingId", in: "path", type: "string", required: true, description: "Meeting UUID (double-encoded if starts with / or contains //)" }
           ]
@@ -323,7 +323,7 @@ const ZOOM_API_SPEC = {
           path: "/past_meetings/{meetingId}/participants",
           summary: "Get past meeting participants",
           description: "Get participants of a past meeting.",
-          scopes: ["meeting:read:admin", "meeting:read"],
+          scopes: ["meeting:read:list_past_participants:admin"],
           parameters: [
             { name: "meetingId", in: "path", type: "string", required: true, description: "Meeting UUID" },
             { name: "page_size", in: "query", type: "integer", required: false, description: "Page size", default: 30 },
@@ -341,7 +341,7 @@ const ZOOM_API_SPEC = {
           path: "/users/{userId}/webinars",
           summary: "List webinars",
           description: "List all webinars scheduled by a user.",
-          scopes: ["webinar:read:admin", "webinar:read"],
+          scopes: ["webinar:read:list_webinars:admin"],
           parameters: [
             { name: "userId", in: "path", type: "string", required: true, description: "User ID or email address" },
             { name: "page_size", in: "query", type: "integer", required: false, description: "Page size", default: 30 },
@@ -353,7 +353,7 @@ const ZOOM_API_SPEC = {
           path: "/users/{userId}/webinars",
           summary: "Create webinar",
           description: "Create a webinar for a user.",
-          scopes: ["webinar:write:admin", "webinar:write"],
+          scopes: ["webinar:write:webinar:admin"],
           parameters: [
             { name: "userId", in: "path", type: "string", required: true, description: "User ID or email address" }
           ],
@@ -382,7 +382,7 @@ const ZOOM_API_SPEC = {
           path: "/webinars/{webinarId}",
           summary: "Get webinar",
           description: "Retrieve webinar details.",
-          scopes: ["webinar:read:admin", "webinar:read"],
+          scopes: ["webinar:read:webinar:admin"],
           parameters: [
             { name: "webinarId", in: "path", type: "integer", required: true, description: "Webinar ID" },
             { name: "occurrence_id", in: "query", type: "string", required: false, description: "Occurrence ID" }
@@ -393,7 +393,7 @@ const ZOOM_API_SPEC = {
           path: "/webinars/{webinarId}",
           summary: "Update webinar",
           description: "Update webinar details.",
-          scopes: ["webinar:write:admin", "webinar:write"],
+          scopes: ["webinar:write:webinar:admin"],
           parameters: [
             { name: "webinarId", in: "path", type: "integer", required: true, description: "Webinar ID" }
           ],
@@ -416,7 +416,7 @@ const ZOOM_API_SPEC = {
           path: "/webinars/{webinarId}",
           summary: "Delete webinar",
           description: "Delete a webinar.",
-          scopes: ["webinar:write:admin", "webinar:write"],
+          scopes: ["webinar:write:webinar:admin"],
           parameters: [
             { name: "webinarId", in: "path", type: "integer", required: true, description: "Webinar ID" },
             { name: "occurrence_id", in: "query", type: "string", required: false, description: "Occurrence ID" }
@@ -427,7 +427,7 @@ const ZOOM_API_SPEC = {
           path: "/webinars/{webinarId}/registrants",
           summary: "List webinar registrants",
           description: "List all registrants for a webinar.",
-          scopes: ["webinar:read:admin", "webinar:read"],
+          scopes: ["webinar:read:list_registrants:admin"],
           parameters: [
             { name: "webinarId", in: "path", type: "integer", required: true, description: "Webinar ID" },
             { name: "occurrence_id", in: "query", type: "string", required: false, description: "Occurrence ID" },
@@ -440,7 +440,7 @@ const ZOOM_API_SPEC = {
           path: "/webinars/{webinarId}/registrants",
           summary: "Add webinar registrant",
           description: "Register a participant for a webinar.",
-          scopes: ["webinar:write:admin", "webinar:write"],
+          scopes: ["webinar:write:registrant:admin"],
           parameters: [
             { name: "webinarId", in: "path", type: "integer", required: true, description: "Webinar ID" }
           ],
@@ -469,7 +469,7 @@ const ZOOM_API_SPEC = {
           path: "/users/{userId}/recordings",
           summary: "List recordings",
           description: "List all cloud recordings for a user.",
-          scopes: ["recording:read:admin", "recording:read"],
+          scopes: ["cloud_recording:read:list_user_recordings:admin"],
           parameters: [
             { name: "userId", in: "path", type: "string", required: true, description: "User ID or email" },
             { name: "page_size", in: "query", type: "integer", required: false, description: "Page size", default: 30 },
@@ -483,7 +483,7 @@ const ZOOM_API_SPEC = {
           path: "/meetings/{meetingId}/recordings",
           summary: "Get meeting recordings",
           description: "Get all recordings for a meeting.",
-          scopes: ["recording:read:admin", "recording:read"],
+          scopes: ["cloud_recording:read:list_recording_files:admin"],
           parameters: [
             { name: "meetingId", in: "path", type: "string", required: true, description: "Meeting ID or UUID" },
             { name: "include_fields", in: "query", type: "string", required: false, description: "Include fields", enum: ["download_access_token"] }
@@ -494,7 +494,7 @@ const ZOOM_API_SPEC = {
           path: "/meetings/{meetingId}/recordings",
           summary: "Delete meeting recordings",
           description: "Delete all recordings for a meeting.",
-          scopes: ["recording:write:admin", "recording:write"],
+          scopes: ["cloud_recording:write:delete_recording:admin"],
           parameters: [
             { name: "meetingId", in: "path", type: "string", required: true, description: "Meeting ID or UUID" },
             { name: "action", in: "query", type: "string", required: false, description: "Action", enum: ["trash", "delete"] }
@@ -505,7 +505,7 @@ const ZOOM_API_SPEC = {
           path: "/meetings/{meetingId}/recordings/{recordingId}",
           summary: "Delete recording file",
           description: "Delete a specific recording file.",
-          scopes: ["recording:write:admin", "recording:write"],
+          scopes: ["cloud_recording:write:delete_recording:admin"],
           parameters: [
             { name: "meetingId", in: "path", type: "string", required: true, description: "Meeting ID or UUID" },
             { name: "recordingId", in: "path", type: "string", required: true, description: "Recording ID" },
@@ -517,7 +517,7 @@ const ZOOM_API_SPEC = {
           path: "/meetings/{meetingId}/recordings/settings",
           summary: "Get recording settings",
           description: "Get settings for a meeting recording.",
-          scopes: ["recording:read:admin", "recording:read"],
+          scopes: ["cloud_recording:read:settings:admin"],
           parameters: [
             { name: "meetingId", in: "path", type: "string", required: true, description: "Meeting ID or UUID" }
           ]
@@ -527,7 +527,7 @@ const ZOOM_API_SPEC = {
           path: "/meetings/{meetingId}/recordings/settings",
           summary: "Update recording settings",
           description: "Update settings for a meeting recording.",
-          scopes: ["recording:write:admin", "recording:write"],
+          scopes: ["cloud_recording:write:settings:admin"],
           parameters: [
             { name: "meetingId", in: "path", type: "string", required: true, description: "Meeting ID or UUID" }
           ],
@@ -558,7 +558,7 @@ const ZOOM_API_SPEC = {
           path: "/report/daily",
           summary: "Get daily usage report",
           description: "Get daily usage report for a date range.",
-          scopes: ["report:read:admin"],
+          scopes: ["report:read:list_account_report:admin"],
           parameters: [
             { name: "year", in: "query", type: "integer", required: false, description: "Year" },
             { name: "month", in: "query", type: "integer", required: false, description: "Month (1-12)" }
@@ -569,7 +569,7 @@ const ZOOM_API_SPEC = {
           path: "/report/users",
           summary: "Get active/inactive host report",
           description: "Get report of active or inactive hosts.",
-          scopes: ["report:read:admin"],
+          scopes: ["report:read:list_active_inactive_users:admin"],
           parameters: [
             { name: "from", in: "query", type: "string", required: true, description: "Start date (yyyy-mm-dd)" },
             { name: "to", in: "query", type: "string", required: true, description: "End date (yyyy-mm-dd)" },
@@ -583,7 +583,7 @@ const ZOOM_API_SPEC = {
           path: "/report/users/{userId}/meetings",
           summary: "Get meeting reports",
           description: "Get meeting reports for a user.",
-          scopes: ["report:read:admin"],
+          scopes: ["report:read:list_user_meeting_report:admin"],
           parameters: [
             { name: "userId", in: "path", type: "string", required: true, description: "User ID" },
             { name: "from", in: "query", type: "string", required: true, description: "Start date" },
@@ -597,7 +597,7 @@ const ZOOM_API_SPEC = {
           path: "/report/meetings/{meetingId}",
           summary: "Get meeting detail report",
           description: "Get detailed report for a past meeting.",
-          scopes: ["report:read:admin"],
+          scopes: ["report:read:meeting:admin"],
           parameters: [
             { name: "meetingId", in: "path", type: "string", required: true, description: "Meeting ID or UUID" }
           ]
@@ -607,7 +607,7 @@ const ZOOM_API_SPEC = {
           path: "/report/meetings/{meetingId}/participants",
           summary: "Get meeting participant report",
           description: "Get participant report for a past meeting.",
-          scopes: ["report:read:admin"],
+          scopes: ["report:read:list_meeting_participants:admin"],
           parameters: [
             { name: "meetingId", in: "path", type: "string", required: true, description: "Meeting ID or UUID" },
             { name: "page_size", in: "query", type: "integer", required: false, description: "Page size", default: 30 },
@@ -620,7 +620,7 @@ const ZOOM_API_SPEC = {
           path: "/report/webinars/{webinarId}",
           summary: "Get webinar detail report",
           description: "Get detailed report for a past webinar.",
-          scopes: ["report:read:admin"],
+          scopes: ["report:read:webinar:admin"],
           parameters: [
             { name: "webinarId", in: "path", type: "string", required: true, description: "Webinar ID or UUID" }
           ]
@@ -630,7 +630,7 @@ const ZOOM_API_SPEC = {
           path: "/report/webinars/{webinarId}/participants",
           summary: "Get webinar participant report",
           description: "Get participant report for a past webinar.",
-          scopes: ["report:read:admin"],
+          scopes: ["report:read:list_webinar_participants:admin"],
           parameters: [
             { name: "webinarId", in: "path", type: "string", required: true, description: "Webinar ID or UUID" },
             { name: "page_size", in: "query", type: "integer", required: false, description: "Page size", default: 30 },
@@ -648,7 +648,7 @@ const ZOOM_API_SPEC = {
           path: "/accounts",
           summary: "List sub accounts",
           description: "List all sub accounts.",
-          scopes: ["account:read:admin"],
+          scopes: ["account:read:list_sub_accounts:admin"],
           parameters: [
             { name: "page_size", in: "query", type: "integer", required: false, description: "Page size", default: 30 },
             { name: "page_number", in: "query", type: "integer", required: false, description: "Page number", default: 1 }
@@ -659,7 +659,7 @@ const ZOOM_API_SPEC = {
           path: "/accounts",
           summary: "Create sub account",
           description: "Create a sub account.",
-          scopes: ["account:write:admin"],
+          scopes: ["account:write:account:admin"],
           parameters: [],
           requestBody: {
             required: true,
@@ -682,7 +682,7 @@ const ZOOM_API_SPEC = {
           path: "/accounts/{accountId}",
           summary: "Get sub account",
           description: "Get sub account details.",
-          scopes: ["account:read:admin"],
+          scopes: ["account:read:account:admin"],
           parameters: [
             { name: "accountId", in: "path", type: "string", required: true, description: "Account ID" }
           ]
@@ -692,7 +692,7 @@ const ZOOM_API_SPEC = {
           path: "/accounts/{accountId}",
           summary: "Disassociate sub account",
           description: "Disassociate a sub account from the master account.",
-          scopes: ["account:write:admin"],
+          scopes: ["account:write:account:admin"],
           parameters: [
             { name: "accountId", in: "path", type: "string", required: true, description: "Account ID" }
           ]
@@ -702,7 +702,7 @@ const ZOOM_API_SPEC = {
           path: "/accounts/{accountId}/settings",
           summary: "Get account settings",
           description: "Get account level settings.",
-          scopes: ["account:read:admin"],
+          scopes: ["account:read:settings:admin"],
           parameters: [
             { name: "accountId", in: "path", type: "string", required: true, description: "Account ID" },
             { name: "option", in: "query", type: "string", required: false, description: "Settings option", enum: ["meeting_authentication", "recording_authentication"] }
@@ -713,7 +713,7 @@ const ZOOM_API_SPEC = {
           path: "/accounts/{accountId}/settings",
           summary: "Update account settings",
           description: "Update account level settings.",
-          scopes: ["account:write:admin"],
+          scopes: ["account:write:settings:admin"],
           parameters: [
             { name: "accountId", in: "path", type: "string", required: true, description: "Account ID" }
           ],
@@ -743,7 +743,7 @@ const ZOOM_API_SPEC = {
           path: "/groups",
           summary: "List groups",
           description: "List all groups.",
-          scopes: ["group:read:admin"],
+          scopes: ["group:read:list_groups:admin"],
           parameters: []
         },
         {
@@ -751,7 +751,7 @@ const ZOOM_API_SPEC = {
           path: "/groups",
           summary: "Create group",
           description: "Create a group.",
-          scopes: ["group:write:admin"],
+          scopes: ["group:write:group:admin"],
           parameters: [],
           requestBody: {
             required: true,
@@ -768,7 +768,7 @@ const ZOOM_API_SPEC = {
           path: "/groups/{groupId}",
           summary: "Get group",
           description: "Get group details.",
-          scopes: ["group:read:admin"],
+          scopes: ["group:read:group:admin"],
           parameters: [
             { name: "groupId", in: "path", type: "string", required: true, description: "Group ID" }
           ]
@@ -778,7 +778,7 @@ const ZOOM_API_SPEC = {
           path: "/groups/{groupId}",
           summary: "Update group",
           description: "Update group details.",
-          scopes: ["group:write:admin"],
+          scopes: ["group:write:group:admin"],
           parameters: [
             { name: "groupId", in: "path", type: "string", required: true, description: "Group ID" }
           ],
@@ -797,7 +797,7 @@ const ZOOM_API_SPEC = {
           path: "/groups/{groupId}",
           summary: "Delete group",
           description: "Delete a group.",
-          scopes: ["group:write:admin"],
+          scopes: ["group:write:group:admin"],
           parameters: [
             { name: "groupId", in: "path", type: "string", required: true, description: "Group ID" }
           ]
@@ -807,7 +807,7 @@ const ZOOM_API_SPEC = {
           path: "/groups/{groupId}/members",
           summary: "List group members",
           description: "List members of a group.",
-          scopes: ["group:read:admin"],
+          scopes: ["group:read:list_members:admin"],
           parameters: [
             { name: "groupId", in: "path", type: "string", required: true, description: "Group ID" },
             { name: "page_size", in: "query", type: "integer", required: false, description: "Page size", default: 30 },
@@ -819,7 +819,7 @@ const ZOOM_API_SPEC = {
           path: "/groups/{groupId}/members",
           summary: "Add group members",
           description: "Add members to a group.",
-          scopes: ["group:write:admin"],
+          scopes: ["group:write:member:admin"],
           parameters: [
             { name: "groupId", in: "path", type: "string", required: true, description: "Group ID" }
           ],
@@ -841,7 +841,7 @@ const ZOOM_API_SPEC = {
           path: "/groups/{groupId}/members/{memberId}",
           summary: "Delete group member",
           description: "Remove a member from a group.",
-          scopes: ["group:write:admin"],
+          scopes: ["group:write:member:admin"],
           parameters: [
             { name: "groupId", in: "path", type: "string", required: true, description: "Group ID" },
             { name: "memberId", in: "path", type: "string", required: true, description: "Member ID" }
@@ -858,7 +858,7 @@ const ZOOM_API_SPEC = {
           path: "/roles",
           summary: "List roles",
           description: "List all roles.",
-          scopes: ["role:read:admin"],
+          scopes: ["role:read:list_roles:admin"],
           parameters: []
         },
         {
@@ -866,7 +866,7 @@ const ZOOM_API_SPEC = {
           path: "/roles",
           summary: "Create role",
           description: "Create a new role.",
-          scopes: ["role:write:admin"],
+          scopes: ["role:write:role:admin"],
           parameters: [],
           requestBody: {
             required: true,
@@ -887,7 +887,7 @@ const ZOOM_API_SPEC = {
           path: "/roles/{roleId}",
           summary: "Get role information",
           description: "Get information about a specific role.",
-          scopes: ["role:read:admin"],
+          scopes: ["role:read:role:admin"],
           parameters: [
             { name: "roleId", in: "path", type: "string", required: true, description: "Role ID" }
           ]
@@ -897,7 +897,7 @@ const ZOOM_API_SPEC = {
           path: "/roles/{roleId}",
           summary: "Update role",
           description: "Update role information.",
-          scopes: ["role:write:admin"],
+          scopes: ["role:write:role:admin"],
           parameters: [
             { name: "roleId", in: "path", type: "string", required: true, description: "Role ID" }
           ],
@@ -918,7 +918,7 @@ const ZOOM_API_SPEC = {
           path: "/roles/{roleId}",
           summary: "Delete role",
           description: "Delete a role.",
-          scopes: ["role:write:admin"],
+          scopes: ["role:write:role:admin"],
           parameters: [
             { name: "roleId", in: "path", type: "string", required: true, description: "Role ID" }
           ]
@@ -928,7 +928,7 @@ const ZOOM_API_SPEC = {
           path: "/roles/{roleId}/members",
           summary: "List role members",
           description: "List all members assigned to a role.",
-          scopes: ["role:read:admin"],
+          scopes: ["role:read:list_members:admin"],
           parameters: [
             { name: "roleId", in: "path", type: "string", required: true, description: "Role ID" },
             { name: "page_size", in: "query", type: "integer", required: false, description: "Page size", default: 30 },
@@ -940,7 +940,7 @@ const ZOOM_API_SPEC = {
           path: "/roles/{roleId}/members",
           summary: "Assign role to members",
           description: "Assign a role to members.",
-          scopes: ["role:write:admin"],
+          scopes: ["role:write:member:admin"],
           parameters: [
             { name: "roleId", in: "path", type: "string", required: true, description: "Role ID" }
           ],
@@ -959,7 +959,7 @@ const ZOOM_API_SPEC = {
           path: "/roles/{roleId}/members/{memberId}",
           summary: "Unassign role from member",
           description: "Remove a role from a member.",
-          scopes: ["role:write:admin"],
+          scopes: ["role:write:member:admin"],
           parameters: [
             { name: "roleId", in: "path", type: "string", required: true, description: "Role ID" },
             { name: "memberId", in: "path", type: "string", required: true, description: "Member ID" }
@@ -976,7 +976,7 @@ const ZOOM_API_SPEC = {
           path: "/metrics/meetings",
           summary: "List meetings metrics",
           description: "Get metrics of live and past meetings.",
-          scopes: ["dashboard_meetings:read:admin"],
+          scopes: ["dashboard:read:list_meeting_metrics:admin"],
           parameters: [
             { name: "type", in: "query", type: "string", required: false, description: "Meeting type", enum: ["past", "pastOne", "live"] },
             { name: "from", in: "query", type: "string", required: true, description: "Start date" },
@@ -990,7 +990,7 @@ const ZOOM_API_SPEC = {
           path: "/metrics/meetings/{meetingId}",
           summary: "Get meeting details metrics",
           description: "Get details on a specific meeting.",
-          scopes: ["dashboard_meetings:read:admin"],
+          scopes: ["dashboard:read:meeting:admin"],
           parameters: [
             { name: "meetingId", in: "path", type: "string", required: true, description: "Meeting ID or UUID" },
             { name: "type", in: "query", type: "string", required: false, description: "Meeting type", enum: ["past", "pastOne", "live"] }
@@ -1001,7 +1001,7 @@ const ZOOM_API_SPEC = {
           path: "/metrics/meetings/{meetingId}/participants",
           summary: "Get meeting participants metrics",
           description: "Get metrics on meeting participants.",
-          scopes: ["dashboard_meetings:read:admin"],
+          scopes: ["dashboard:read:list_meeting_participants:admin"],
           parameters: [
             { name: "meetingId", in: "path", type: "string", required: true, description: "Meeting ID or UUID" },
             { name: "type", in: "query", type: "string", required: false, description: "Meeting type", enum: ["past", "pastOne", "live"] },
@@ -1014,7 +1014,7 @@ const ZOOM_API_SPEC = {
           path: "/metrics/webinars",
           summary: "List webinars metrics",
           description: "Get metrics of live and past webinars.",
-          scopes: ["dashboard_webinars:read:admin"],
+          scopes: ["dashboard:read:list_webinar_metrics:admin"],
           parameters: [
             { name: "type", in: "query", type: "string", required: false, description: "Webinar type", enum: ["past", "live"] },
             { name: "from", in: "query", type: "string", required: true, description: "Start date" },
@@ -1028,7 +1028,7 @@ const ZOOM_API_SPEC = {
           path: "/metrics/webinars/{webinarId}",
           summary: "Get webinar detail metrics",
           description: "Get detailed metrics for a webinar.",
-          scopes: ["dashboard_webinars:read:admin"],
+          scopes: ["dashboard:read:webinar:admin"],
           parameters: [
             { name: "webinarId", in: "path", type: "string", required: true, description: "Webinar ID or UUID" },
             { name: "type", in: "query", type: "string", required: false, description: "Webinar type", enum: ["past", "live"] }
@@ -1039,7 +1039,7 @@ const ZOOM_API_SPEC = {
           path: "/metrics/zoomrooms",
           summary: "List Zoom Rooms",
           description: "Get a list of all Zoom Rooms.",
-          scopes: ["dashboard_zr:read:admin"],
+          scopes: ["dashboard:read:list_zoom_rooms:admin"],
           parameters: [
             { name: "page_size", in: "query", type: "integer", required: false, description: "Page size", default: 30 },
             { name: "page_number", in: "query", type: "integer", required: false, description: "Page number", default: 1 }
@@ -1050,7 +1050,7 @@ const ZOOM_API_SPEC = {
           path: "/metrics/zoomrooms/{zoomroomId}",
           summary: "Get Zoom Room details",
           description: "Get details of a specific Zoom Room.",
-          scopes: ["dashboard_zr:read:admin"],
+          scopes: ["dashboard:read:zoom_room:admin"],
           parameters: [
             { name: "zoomroomId", in: "path", type: "string", required: true, description: "Zoom Room ID" },
             { name: "from", in: "query", type: "string", required: true, description: "Start date" },
@@ -1070,7 +1070,7 @@ const ZOOM_API_SPEC = {
           path: "/chat/users/{userId}/channels",
           summary: "List user's channels",
           description: "List all channels a user belongs to.",
-          scopes: ["chat_channel:read", "chat_channel:read:admin"],
+          scopes: ["team_chat:read:list_user_channels:admin"],
           parameters: [
             { name: "userId", in: "path", type: "string", required: true, description: "User ID or email" },
             { name: "page_size", in: "query", type: "integer", required: false, description: "Page size", default: 10 },
@@ -1082,7 +1082,7 @@ const ZOOM_API_SPEC = {
           path: "/chat/users/{userId}/channels",
           summary: "Create channel",
           description: "Create a new channel.",
-          scopes: ["chat_channel:write", "chat_channel:write:admin"],
+          scopes: ["team_chat:write:channel:admin"],
           parameters: [
             { name: "userId", in: "path", type: "string", required: true, description: "User ID or email" }
           ],
@@ -1105,7 +1105,7 @@ const ZOOM_API_SPEC = {
           path: "/chat/channels/{channelId}",
           summary: "Get channel",
           description: "Get information about a channel.",
-          scopes: ["chat_channel:read", "chat_channel:read:admin"],
+          scopes: ["team_chat:read:channel:admin"],
           parameters: [
             { name: "channelId", in: "path", type: "string", required: true, description: "Channel ID" }
           ]
@@ -1115,7 +1115,7 @@ const ZOOM_API_SPEC = {
           path: "/chat/channels/{channelId}",
           summary: "Update channel",
           description: "Update a channel.",
-          scopes: ["chat_channel:write", "chat_channel:write:admin"],
+          scopes: ["team_chat:write:channel:admin"],
           parameters: [
             { name: "channelId", in: "path", type: "string", required: true, description: "Channel ID" }
           ],
@@ -1134,7 +1134,7 @@ const ZOOM_API_SPEC = {
           path: "/chat/channels/{channelId}",
           summary: "Delete channel",
           description: "Delete a channel.",
-          scopes: ["chat_channel:write", "chat_channel:write:admin"],
+          scopes: ["team_chat:write:channel:admin"],
           parameters: [
             { name: "channelId", in: "path", type: "string", required: true, description: "Channel ID" }
           ]
@@ -1144,7 +1144,7 @@ const ZOOM_API_SPEC = {
           path: "/chat/channels/{channelId}/members",
           summary: "List channel members",
           description: "List members of a channel.",
-          scopes: ["chat_channel:read", "chat_channel:read:admin"],
+          scopes: ["team_chat:read:list_members:admin"],
           parameters: [
             { name: "channelId", in: "path", type: "string", required: true, description: "Channel ID" },
             { name: "page_size", in: "query", type: "integer", required: false, description: "Page size", default: 10 },
@@ -1156,7 +1156,7 @@ const ZOOM_API_SPEC = {
           path: "/chat/channels/{channelId}/members",
           summary: "Invite channel members",
           description: "Invite members to a channel.",
-          scopes: ["chat_channel:write", "chat_channel:write:admin"],
+          scopes: ["team_chat:write:member:admin"],
           parameters: [
             { name: "channelId", in: "path", type: "string", required: true, description: "Channel ID" }
           ],
@@ -1175,7 +1175,7 @@ const ZOOM_API_SPEC = {
           path: "/chat/users/{userId}/messages",
           summary: "List user's chat messages",
           description: "Get chat messages for a user.",
-          scopes: ["chat_message:read", "chat_message:read:admin"],
+          scopes: ["team_chat:read:list_user_messages:admin"],
           parameters: [
             { name: "userId", in: "path", type: "string", required: true, description: "User ID or email" },
             { name: "to_contact", in: "query", type: "string", required: false, description: "Contact's user ID or email" },
@@ -1190,7 +1190,7 @@ const ZOOM_API_SPEC = {
           path: "/chat/users/{userId}/messages",
           summary: "Send chat message",
           description: "Send a chat message.",
-          scopes: ["chat_message:write", "chat_message:write:admin"],
+          scopes: ["team_chat:write:message:admin"],
           parameters: [
             { name: "userId", in: "path", type: "string", required: true, description: "User ID or email (sender)" }
           ],
@@ -1218,7 +1218,7 @@ const ZOOM_API_SPEC = {
           path: "/phone/users",
           summary: "List phone users",
           description: "List all Zoom Phone users.",
-          scopes: ["phone:read:admin"],
+          scopes: ["phone:read:list_users:admin"],
           parameters: [
             { name: "page_size", in: "query", type: "integer", required: false, description: "Page size", default: 30 },
             { name: "next_page_token", in: "query", type: "string", required: false, description: "Next page token" },
@@ -1230,7 +1230,7 @@ const ZOOM_API_SPEC = {
           path: "/phone/users/{userId}",
           summary: "Get phone user",
           description: "Get phone user information.",
-          scopes: ["phone:read:admin", "phone:read"],
+          scopes: ["phone:read:user:admin"],
           parameters: [
             { name: "userId", in: "path", type: "string", required: true, description: "User ID or email" }
           ]
@@ -1240,7 +1240,7 @@ const ZOOM_API_SPEC = {
           path: "/phone/users/{userId}",
           summary: "Update phone user",
           description: "Update phone user settings.",
-          scopes: ["phone:write:admin"],
+          scopes: ["phone:write:user:admin"],
           parameters: [
             { name: "userId", in: "path", type: "string", required: true, description: "User ID or email" }
           ],
@@ -1260,7 +1260,7 @@ const ZOOM_API_SPEC = {
           path: "/phone/call_logs",
           summary: "Get account call logs",
           description: "Get call logs for the account.",
-          scopes: ["phone:read:admin"],
+          scopes: ["phone:read:list_call_logs:admin"],
           parameters: [
             { name: "from", in: "query", type: "string", required: true, description: "Start date" },
             { name: "to", in: "query", type: "string", required: true, description: "End date" },
@@ -1274,7 +1274,7 @@ const ZOOM_API_SPEC = {
           path: "/phone/users/{userId}/call_logs",
           summary: "Get user call logs",
           description: "Get call logs for a user.",
-          scopes: ["phone:read:admin", "phone:read"],
+          scopes: ["phone:read:list_user_call_logs:admin"],
           parameters: [
             { name: "userId", in: "path", type: "string", required: true, description: "User ID or email" },
             { name: "from", in: "query", type: "string", required: true, description: "Start date" },
@@ -1289,7 +1289,7 @@ const ZOOM_API_SPEC = {
           path: "/phone/numbers",
           summary: "List phone numbers",
           description: "List all phone numbers in the account.",
-          scopes: ["phone:read:admin"],
+          scopes: ["phone:read:list_numbers:admin"],
           parameters: [
             { name: "type", in: "query", type: "string", required: false, description: "Number type" },
             { name: "page_size", in: "query", type: "integer", required: false, description: "Page size", default: 30 },
@@ -1301,7 +1301,7 @@ const ZOOM_API_SPEC = {
           path: "/phone/sites",
           summary: "List phone sites",
           description: "List all Zoom Phone sites.",
-          scopes: ["phone:read:admin"],
+          scopes: ["phone:read:list_sites:admin"],
           parameters: [
             { name: "page_size", in: "query", type: "integer", required: false, description: "Page size", default: 30 },
             { name: "next_page_token", in: "query", type: "string", required: false, description: "Next page token" }
