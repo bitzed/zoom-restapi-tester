@@ -4,7 +4,8 @@
   "version": "1.0.0",
   "description": "Test Zoom REST APIs with Server-to-Server OAuth authentication",
   "permissions": [
-    "storage"
+    "storage",
+    "alarms"
   ],
   "host_permissions": [
     "https://zoom.us/*",
