@@ -16,7 +16,7 @@ Zoom REST APIをテストするためのChrome拡張機能です。Server-to-Ser
 
 1. このリポジトリをクローンまたはダウンロード
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/bitzed/zoom-restapi-tester.git
    ```
 
 2. Chromeで `chrome://extensions/` を開く
