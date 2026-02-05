@@ -1,6 +1,43 @@
 // Background service worker for Zoom REST API Tester
 // Handles background tasks and token management
 
+// Window state
+let appWindowId = null;
+
+// Listen for extension icon click - open independent window
+chrome.action.onClicked.addListener(async () => {
+  // Check if window already exists and is open
+  if (appWindowId !== null) {
+    try {
+      const window = await chrome.windows.get(appWindowId);
+      // Window exists, focus it
+      await chrome.windows.update(appWindowId, { focused: true });
+      return;
+    } catch (e) {
+      // Window doesn't exist anymore
+      appWindowId = null;
+    }
+  }
+
+  // Create new window
+  const window = await chrome.windows.create({
+    url: 'popup.html',
+    type: 'popup',
+    width: 1000,
+    height: 800,
+    focused: true
+  });
+
+  appWindowId = window.id;
+});
+
+// Clean up window ID when window is closed
+chrome.windows.onRemoved.addListener((windowId) => {
+  if (windowId === appWindowId) {
+    appWindowId = null;
+  }
+});
+
 // Listen for extension installation
 chrome.runtime.onInstalled.addListener((details) => {
   if (details.reason === 'install') {
