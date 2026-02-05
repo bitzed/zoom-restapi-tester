@@ -11,15 +11,15 @@ body {
   line-height: 1.5;
   color: #333;
   background-color: #f5f5f5;
-  width: 600px;
-  height: 900px;
-  overflow: hidden;
+  width: 800px;
+  height: 600px;
+  overflow: scroll;
 }
 
 .container {
   display: flex;
   flex-direction: column;
-  height: 900px;
+  height: 600px;
 }
 
 /* Header */
