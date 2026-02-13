@@ -46,21 +46,58 @@
     <section class="api-section">
       <h2>API Reference</h2>
 
-      <!-- Category Filter -->
-      <div class="category-filter">
-        <label for="category-select">Category:</label>
-        <select id="category-select">
-          <option value="">All Categories</option>
-        </select>
+      <!-- Group and Category Filter -->
+      <div class="filter-row">
+        <div class="filter-group">
+          <label for="group-select">Group:</label>
+          <select id="group-select">
+            <option value="">Select Group</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label for="category-select">Category:</label>
+          <select id="category-select" disabled>
+            <option value="">Select Category</option>
+          </select>
+        </div>
+        <button id="refresh-spec-btn" class="btn btn-secondary btn-sm" title="Refresh API Spec" disabled>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M23 4v6h-6"></path>
+            <path d="M1 20v-6h6"></path>
+            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+          </svg>
+        </button>
       </div>
 
       <!-- Search -->
       <div class="search-box">
-        <input type="text" id="api-search" placeholder="Search APIs...">
+        <input type="text" id="api-search" placeholder="Search APIs..." disabled>
+      </div>
+
+      <!-- Cache Info -->
+      <div id="cache-info" class="cache-info" style="display: none;">
+        <span id="cache-status"></span>
+      </div>
+
+      <!-- Loading Indicator -->
+      <div id="spec-loading" class="spec-loading" style="display: none;">
+        <span class="spinner"></span>
+        <span>Loading API Spec...</span>
       </div>
 
       <!-- API List -->
-      <div id="api-list" class="api-list"></div>
+      <div id="api-list" class="api-list">
+        <div class="empty-state">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+            <line x1="16" y1="13" x2="8" y2="13"></line>
+            <line x1="16" y1="17" x2="8" y2="17"></line>
+            <polyline points="10 9 9 9 8 9"></polyline>
+          </svg>
+          <p>Select a Group and Category to load APIs</p>
+        </div>
+      </div>
     </section>
 
     <!-- API Detail Panel -->
@@ -129,22 +166,8 @@
     </div>
   </div>
 
-  <!-- API Specifications -->
-  <script src="specs/index.js"></script>
-  <!-- Workplace -->
-  <script src="specs/workplace-meetings.js"></script>
-  <script src="specs/workplace-team-chat.js"></script>
-  <script src="specs/workplace-phone.js"></script>
-  <script src="specs/workplace-cloud-recording.js"></script>
-  <script src="specs/workplace-reports.js"></script>
-  <!-- Business Services -->
-  <script src="specs/business-webinars.js"></script>
-  <!-- Accounts -->
-  <script src="specs/accounts-users.js"></script>
-  <script src="specs/accounts-accounts.js"></script>
-  <script src="specs/accounts-groups.js"></script>
-  <script src="specs/accounts-roles.js"></script>
-
+  <!-- API Spec Loader -->
+  <script src="api-spec-loader.js"></script>
   <script src="popup.js"></script>
 </body>
 </html>
