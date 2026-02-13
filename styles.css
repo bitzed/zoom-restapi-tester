@@ -207,27 +207,97 @@ body {
   letter-spacing: 0.5px;
 }
 
-.category-filter {
+/* Filter Row */
+.filter-row {
   display: flex;
-  align-items: center;
-  gap: 8px;
+  align-items: flex-end;
+  gap: 12px;
   margin-bottom: 12px;
 }
 
-.category-filter label {
-  font-size: 13px;
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.filter-group label {
+  font-size: 12px;
   font-weight: 500;
   color: #666;
 }
 
-.category-filter select {
-  flex: 1;
+.filter-group select {
   padding: 8px 12px;
   border: 1px solid #ddd;
   border-radius: 6px;
   font-size: 13px;
   background-color: white;
   cursor: pointer;
+}
+
+.filter-group select:disabled {
+  background-color: #f5f5f5;
+  cursor: not-allowed;
+}
+
+.btn-sm {
+  padding: 8px 12px;
+  font-size: 13px;
+}
+
+.btn-sm svg {
+  display: block;
+}
+
+/* Cache Info */
+.cache-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  background-color: #f8f9fa;
+  border-radius: 6px;
+  margin-bottom: 12px;
+  font-size: 12px;
+}
+
+.cache-badge {
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-weight: 600;
+  font-size: 11px;
+  text-transform: uppercase;
+}
+
+.cache-badge.cached {
+  background-color: #e2e3e5;
+  color: #383d41;
+}
+
+.cache-badge.fresh {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.cache-date {
+  color: #666;
+}
+
+.cache-count {
+  color: #666;
+  margin-left: auto;
+}
+
+/* Spec Loading */
+.spec-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 40px;
+  color: #666;
 }
 
 .search-box {
@@ -246,6 +316,11 @@ body {
   outline: none;
   border-color: #2D8CFF;
   box-shadow: 0 0 0 3px rgba(45, 140, 255, 0.1);
+}
+
+.search-box input:disabled {
+  background-color: #f5f5f5;
+  cursor: not-allowed;
 }
 
 /* API List */
@@ -811,6 +886,19 @@ body {
 .empty-state svg {
   margin-bottom: 12px;
   opacity: 0.5;
+}
+
+.empty-state.error {
+  color: #721c24;
+}
+
+.empty-state.error svg {
+  opacity: 0.7;
+  stroke: #dc3545;
+}
+
+.empty-state .btn {
+  margin-top: 12px;
 }
 
 /* JSON Syntax Highlighting */

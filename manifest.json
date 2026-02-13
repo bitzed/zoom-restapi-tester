@@ -9,7 +9,8 @@
   ],
   "host_permissions": [
     "https://zoom.us/*",
-    "https://api.zoom.us/*"
+    "https://api.zoom.us/*",
+    "https://developers.zoom.us/*"
   ],
   "action": {
     "default_icon": {

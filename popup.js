@@ -3,6 +3,8 @@
 // State
 let currentToken = null;
 let tokenExpiresAt = null;
+let currentSpec = null;
+let currentCategory = null;
 
 // DOM Elements
 const settingsBtn = document.getElementById('settings-btn');
@@ -20,9 +22,14 @@ const tokenPreview = document.getElementById('token-preview');
 const tokenExpires = document.getElementById('token-expires');
 const authError = document.getElementById('auth-error');
 
+const groupSelect = document.getElementById('group-select');
 const categorySelect = document.getElementById('category-select');
+const refreshSpecBtn = document.getElementById('refresh-spec-btn');
 const apiSearch = document.getElementById('api-search');
 const apiList = document.getElementById('api-list');
+const cacheInfo = document.getElementById('cache-info');
+const cacheStatus = document.getElementById('cache-status');
+const specLoading = document.getElementById('spec-loading');
 
 const apiDetailPanel = document.getElementById('api-detail-panel');
 const closePanelBtn = document.getElementById('close-panel-btn');
@@ -35,8 +42,7 @@ document.addEventListener('DOMContentLoaded', init);
 async function init() {
   setupEventListeners();
   await loadStoredToken();
-  populateCategories();
-  renderApiList();
+  populateGroups();
 }
 
 // Event Listeners
@@ -57,8 +63,12 @@ function setupEventListeners() {
   authBtn.addEventListener('click', authenticate);
   clearTokenBtn.addEventListener('click', clearToken);
 
+  // Group/Category selection
+  groupSelect.addEventListener('change', onGroupChange);
+  categorySelect.addEventListener('change', onCategoryChange);
+  refreshSpecBtn.addEventListener('click', onRefreshSpec);
+
   // API filtering
-  categorySelect.addEventListener('change', renderApiList);
   apiSearch.addEventListener('input', debounce(renderApiList, 300));
 
   // Panel
@@ -252,38 +262,192 @@ function hideAuthError() {
   authError.style.display = 'none';
 }
 
-// API List Functions
-function populateCategories() {
-  ZOOM_API_SPEC.categories.forEach(category => {
+// Group/Category Functions
+function populateGroups() {
+  const groups = ApiSpecLoader.getCategoryGroups();
+  groupSelect.innerHTML = '<option value="">Select Group</option>';
+  groups.forEach(group => {
     const option = document.createElement('option');
-    option.value = category.name;
-    option.textContent = category.name;
-    categorySelect.appendChild(option);
+    option.value = group.name;
+    option.textContent = group.name;
+    groupSelect.appendChild(option);
   });
 }
 
-function renderApiList() {
-  const selectedCategory = categorySelect.value;
-  const searchTerm = apiSearch.value.toLowerCase();
+function onGroupChange() {
+  const selectedGroup = groupSelect.value;
+  categorySelect.innerHTML = '<option value="">Select Category</option>';
 
+  if (!selectedGroup) {
+    categorySelect.disabled = true;
+    refreshSpecBtn.disabled = true;
+    apiSearch.disabled = true;
+    currentSpec = null;
+    currentCategory = null;
+    renderEmptyState('Select a Group and Category to load APIs');
+    hideCacheInfo();
+    return;
+  }
+
+  const groups = ApiSpecLoader.getCategoryGroups();
+  const group = groups.find(g => g.name === selectedGroup);
+
+  if (group) {
+    group.categories.forEach(cat => {
+      const option = document.createElement('option');
+      option.value = cat.slug;
+      option.textContent = cat.name;
+      option.dataset.categoryName = cat.name;
+      categorySelect.appendChild(option);
+    });
+    categorySelect.disabled = false;
+  }
+
+  currentSpec = null;
+  currentCategory = null;
+  renderEmptyState('Select a Category to load APIs');
+  hideCacheInfo();
+}
+
+async function onCategoryChange() {
+  const slug = categorySelect.value;
+  const selectedOption = categorySelect.options[categorySelect.selectedIndex];
+  const categoryName = selectedOption?.dataset?.categoryName || slug;
+
+  if (!slug) {
+    refreshSpecBtn.disabled = true;
+    apiSearch.disabled = true;
+    currentSpec = null;
+    currentCategory = null;
+    renderEmptyState('Select a Category to load APIs');
+    hideCacheInfo();
+    return;
+  }
+
+  currentCategory = { slug, name: categoryName };
+  await loadCategorySpec(slug, categoryName, false);
+}
+
+async function onRefreshSpec() {
+  if (!currentCategory) return;
+  await loadCategorySpec(currentCategory.slug, currentCategory.name, true);
+}
+
+async function loadCategorySpec(slug, categoryName, forceRefresh) {
+  showLoading(true);
+  refreshSpecBtn.disabled = true;
+  apiSearch.disabled = true;
+  hideCacheInfo();
+
+  try {
+    const result = await ApiSpecLoader.getSpec(slug, categoryName, forceRefresh);
+    currentSpec = result.spec;
+
+    // Show cache info
+    showCacheInfo(result.fromCache, currentSpec.fetchedAt, currentSpec.endpoints.length);
+
+    // Enable controls
+    refreshSpecBtn.disabled = false;
+    apiSearch.disabled = false;
+    apiSearch.value = '';
+
+    // Render API list
+    renderApiList();
+  } catch (error) {
+    console.error('Failed to load spec:', error);
+    renderErrorState(`Failed to load API spec: ${error.message}`);
+  } finally {
+    showLoading(false);
+  }
+}
+
+function showLoading(show) {
+  specLoading.style.display = show ? 'flex' : 'none';
+  if (show) {
+    apiList.innerHTML = '';
+  }
+}
+
+function showCacheInfo(fromCache, fetchedAt, endpointCount) {
+  const date = new Date(fetchedAt);
+  const dateStr = date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+
+  cacheStatus.innerHTML = `
+    <span class="cache-badge ${fromCache ? 'cached' : 'fresh'}">${fromCache ? 'Cached' : 'Fresh'}</span>
+    <span class="cache-date">Fetched: ${dateStr}</span>
+    <span class="cache-count">${endpointCount} endpoints</span>
+  `;
+  cacheInfo.style.display = 'flex';
+}
+
+function hideCacheInfo() {
+  cacheInfo.style.display = 'none';
+}
+
+function renderEmptyState(message) {
+  apiList.innerHTML = `
+    <div class="empty-state">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+        <polyline points="14 2 14 8 20 8"></polyline>
+        <line x1="16" y1="13" x2="8" y2="13"></line>
+        <line x1="16" y1="17" x2="8" y2="17"></line>
+        <polyline points="10 9 9 9 8 9"></polyline>
+      </svg>
+      <p>${message}</p>
+    </div>
+  `;
+}
+
+function renderErrorState(message) {
+  apiList.innerHTML = `
+    <div class="empty-state error">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="12" y1="8" x2="12" y2="12"></line>
+        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+      </svg>
+      <p>${message}</p>
+      <button class="btn btn-secondary" onclick="onCategoryChange()">Retry</button>
+    </div>
+  `;
+}
+
+// API List Functions
+function renderApiList() {
+  if (!currentSpec) {
+    renderEmptyState('Select a Category to load APIs');
+    return;
+  }
+
+  const searchTerm = apiSearch.value.toLowerCase();
   apiList.innerHTML = '';
 
-  const filteredCategories = ZOOM_API_SPEC.categories.filter(category => {
-    if (selectedCategory && category.name !== selectedCategory) return false;
-    return true;
+  // Group endpoints by tags
+  const tagGroups = {};
+  currentSpec.endpoints.forEach(endpoint => {
+    const tag = endpoint.tags[0] || 'Other';
+    if (!tagGroups[tag]) {
+      tagGroups[tag] = [];
+    }
+    tagGroups[tag].push(endpoint);
   });
 
-  filteredCategories.forEach(category => {
-    const filteredEndpoints = category.endpoints.filter(endpoint => {
+  let totalVisible = 0;
+
+  Object.entries(tagGroups).forEach(([tag, endpoints]) => {
+    const filteredEndpoints = endpoints.filter(endpoint => {
       if (!searchTerm) return true;
       return (
         endpoint.path.toLowerCase().includes(searchTerm) ||
         endpoint.summary.toLowerCase().includes(searchTerm) ||
-        endpoint.method.toLowerCase().includes(searchTerm)
+        endpoint.method.toLowerCase().includes(searchTerm) ||
+        endpoint.operationId.toLowerCase().includes(searchTerm)
       );
     });
 
     if (filteredEndpoints.length === 0) return;
+    totalVisible += filteredEndpoints.length;
 
     const categoryEl = document.createElement('div');
     categoryEl.className = 'api-category';
@@ -292,7 +456,7 @@ function renderApiList() {
     headerEl.className = 'category-header';
     headerEl.innerHTML = `
       <span class="arrow">▶</span>
-      <span>${category.name}</span>
+      <span>${tag}</span>
       <span style="margin-left: auto; color: #666; font-weight: normal;">(${filteredEndpoints.length})</span>
     `;
     headerEl.addEventListener('click', () => toggleCategory(headerEl));
@@ -317,14 +481,14 @@ function renderApiList() {
     apiList.appendChild(categoryEl);
   });
 
-  if (apiList.children.length === 0) {
+  if (totalVisible === 0) {
     apiList.innerHTML = `
       <div class="empty-state">
         <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <circle cx="11" cy="11" r="8"></circle>
           <path d="m21 21-4.35-4.35"></path>
         </svg>
-        <p>No APIs found matching your criteria</p>
+        <p>No APIs found matching "${searchTerm}"</p>
       </div>
     `;
   }
@@ -353,6 +517,9 @@ function renderEndpointDetail(endpoint) {
   const pathParams = endpoint.parameters.filter(p => p.in === 'path');
   const queryParams = endpoint.parameters.filter(p => p.in === 'query');
 
+  // Determine base URL
+  const baseUrl = currentSpec?.servers?.[0]?.url || 'https://api.zoom.us/v2';
+
   let html = `
     <div class="api-detail">
       <div class="endpoint-header">
@@ -360,15 +527,19 @@ function renderEndpointDetail(endpoint) {
         <span class="endpoint-path">${endpoint.path}</span>
       </div>
 
-      <p class="description">${endpoint.description}</p>
+      <p class="description">${endpoint.description || endpoint.summary}</p>
 
       <!-- Required Scopes -->
       <div class="scopes-section">
-        <h4>Required Scopes</h4>
-        <p style="font-size: 12px; margin-bottom: 8px; color: #856404;">Ensure your Server-to-Server OAuth app has these scopes enabled:</p>
-        <div class="scope-list">
-          ${endpoint.scopes.map(scope => `<span class="scope-tag">${scope}</span>`).join('')}
-        </div>
+        <h4>Required Granular Scopes</h4>
+        ${endpoint.scopes.length > 0 ? `
+          <p style="font-size: 12px; margin-bottom: 8px; color: #856404;">Ensure your Server-to-Server OAuth app has these scopes enabled:</p>
+          <div class="scope-list">
+            ${endpoint.scopes.map(scope => `<span class="scope-tag">${scope}</span>`).join('')}
+          </div>
+        ` : `
+          <p style="font-size: 12px; color: #666;">No granular scopes found in documentation. Check the <a href="https://developers.zoom.us/docs/api/" target="_blank">official docs</a>.</p>
+        `}
       </div>
   `;
 
@@ -394,11 +565,12 @@ function renderEndpointDetail(endpoint) {
 
   // Request Body
   if (hasBody) {
+    const example = endpoint.requestBody.example || {};
     html += `
       <div class="body-section">
         <div class="section-header">Request Body</div>
         <div class="body-editor">
-          <textarea id="request-body" placeholder="Enter JSON request body...">${JSON.stringify(endpoint.requestBody.example || {}, null, 2)}</textarea>
+          <textarea id="request-body" placeholder="Enter JSON request body...">${JSON.stringify(example, null, 2)}</textarea>
         </div>
       </div>
     `;
@@ -425,8 +597,11 @@ function renderEndpointDetail(endpoint) {
 
   apiDetailContent.innerHTML = html;
 
+  // Store baseUrl for execution
+  apiDetailContent.dataset.baseUrl = baseUrl;
+
   // Add execute handler
-  document.getElementById('execute-btn').addEventListener('click', () => executeRequest(endpoint));
+  document.getElementById('execute-btn').addEventListener('click', () => executeRequest(endpoint, baseUrl));
 }
 
 function renderParamInput(param, type) {
@@ -464,7 +639,7 @@ function renderParamInput(param, type) {
 }
 
 // API Execution
-async function executeRequest(endpoint) {
+async function executeRequest(endpoint, baseUrl) {
   if (!currentToken) {
     alert('Please authenticate first.');
     return;
@@ -481,7 +656,7 @@ async function executeRequest(endpoint) {
 
   try {
     // Build URL with path and query parameters
-    let url = ZOOM_API_SPEC.info.baseUrl + endpoint.path;
+    let url = baseUrl + endpoint.path;
 
     // Collect parameters
     const pathInputs = document.querySelectorAll('.param-input[data-in="path"]');

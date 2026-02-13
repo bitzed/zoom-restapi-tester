@@ -1,16 +1,19 @@
-# Zoom REST API Tester
+# Zoom REST API Tester - Server to Server Ver
 
 Zoom REST APIをテストするためのChrome拡張機能です。Server-to-Server OAuth認証を使用してAPIリクエストを実行できます。
 
 ## 機能
 
 - Server-to-Server OAuth認証によるアクセストークン取得
+- Zoom公式API Specから動的にAPI仕様を取得
+- 全35カテゴリ、数百のAPIエンドポイントを自動網羅
 - Swagger風のAPI一覧表示
 - カテゴリ別・検索によるAPIフィルタリング
 - パラメータ入力フォーム
 - APIリクエストの実行と結果表示
 - Granular Scopes対応
 - 独立ウィンドウで起動（サイズ制限なし）
+- API Specのキャッシュと自動更新
 
 ## インストール方法
 
@@ -47,15 +50,24 @@ Zoom REST APIをテストするためのChrome拡張機能です。Server-to-Ser
 
 ### 3. APIのテスト
 
-1. カテゴリを選択または検索でAPIを絞り込む
-2. テストしたいAPIをクリック
-3. 詳細パネルで:
-   - **Required Scopes**: 必要なGranular Scopesを確認
+1. **Group** を選択（Workplace, Business Services, Accounts等）
+2. **Category** を選択（Meetings, Users, Phone等）
+   - 初回選択時、Zoom公式サイトからAPI Specを自動取得
+   - 取得したSpecはキャッシュされ、次回以降は即座に表示
+3. 検索でAPIを絞り込む
+4. テストしたいAPIをクリック
+5. 詳細パネルで:
+   - **Required Granular Scopes**: 必要なGranular Scopesを確認
    - **Path Parameters**: パスパラメータを入力
    - **Query Parameters**: クエリパラメータを入力
    - **Request Body**: リクエストボディ（POST/PUT/PATCHの場合）を入力
-4. 「Execute Request」をクリック
-5. レスポンスが下部に表示される
+6. 「Execute Request」をクリック
+7. レスポンスが下部に表示される
+
+### 4. API Specの更新
+
+- カテゴリ選択後、更新ボタン（🔄）をクリックすると最新のSpecを再取得
+- キャッシュは7日間有効。期限切れ後は自動的に再取得
 
 ## Zoom Server-to-Server OAuthアプリの作成
 
@@ -66,164 +78,63 @@ Zoom REST APIをテストするためのChrome拡張機能です。Server-to-Ser
    - 例: `user:read:list_users:admin`（ユーザー一覧取得用）
 5. Account ID、Client ID、Client Secretをコピー
 
+## 対応APIカテゴリ
+
+### Workplace
+- Meetings, Team Chat, Phone, Mail, Calendar, Scheduler
+- Rooms, Clips, Whiteboard, CRC, Chatbot
+- AI Companion, Zoom Docs, Tasks
+
+### Business Services
+- Contact Center, Webinars Plus & Events, Virtual Agent
+- Revenue Accelerator, Number Management, Quality Management
+- Workforce Management, Commerce, Healthcare
+- Video Management, Auto Dialer
+
+### Accounts
+- Users, Accounts, QSS, SCIM 2
+
+### Build Platform
+- Video SDK, Cobrowse SDK
+
+### Marketplace
+- Apps
+
 ## プロジェクト構成
 
 ```
 zoom-restapi-tester/
 ├── manifest.json          # Chrome拡張機能マニフェスト
-├── popup.html             # ポップアップUI
-├── popup.js               # メインロジック
+├── popup.html             # メインUI
+├── popup.js               # UIロジック
+├── api-spec-loader.js     # API Spec動的ローダー
 ├── styles.css             # スタイルシート
 ├── background.js          # Service Worker
 ├── icons/                 # アイコン画像
 │   ├── icon16.png
 │   ├── icon48.png
 │   └── icon128.png
-└── specs/                 # API仕様ファイル
-    ├── index.js           # メインローダー
-    ├── workplace-meetings.js
-    ├── workplace-team-chat.js
-    ├── workplace-phone.js
-    ├── workplace-cloud-recording.js
-    ├── workplace-reports.js
-    ├── business-webinars.js
-    ├── accounts-users.js
-    ├── accounts-accounts.js
-    ├── accounts-groups.js
-    └── accounts-roles.js
+└── README.md
 ```
 
-## API Specの追加方法
+## 技術詳細
 
-新しいAPIカテゴリを追加する手順:
+### API Spec取得の仕組み
 
-### 1. 新しいSpecファイルを作成
+1. ユーザーがカテゴリを選択
+2. `https://developers.zoom.us/api-hub/{category}/methods/endpoints.json` からOpenAPI 3.0形式のSpecを取得
+3. OpenAPI形式を内部形式にパースし、`chrome.storage.local` にキャッシュ
+4. Granular Scopes（4セグメント形式）のみを抽出して表示
 
-`specs/` フォルダに新しいJSファイルを作成します。
+### キャッシュ管理
 
-命名規則: `{グループ名}-{カテゴリ名}.js`
-- 例: `workplace-calendar.js`, `business-contact-center.js`
-
-### 2. Specファイルの構造
-
-```javascript
-// specs/workplace-calendar.js
-
-registerCategory("Workplace", {
-  name: "Calendar",
-  endpoints: [
-    {
-      method: "GET",
-      path: "/users/{userId}/calendar/events",
-      summary: "List calendar events",
-      description: "List all calendar events for a user.",
-      scopes: ["calendar:read:list_events:admin"],
-      parameters: [
-        {
-          name: "userId",
-          in: "path",
-          required: true,
-          type: "string",
-          description: "User ID or email address"
-        },
-        {
-          name: "from",
-          in: "query",
-          required: false,
-          type: "string",
-          description: "Start date (yyyy-MM-dd)"
-        },
-        {
-          name: "to",
-          in: "query",
-          required: false,
-          type: "string",
-          description: "End date (yyyy-MM-dd)"
-        }
-      ]
-    },
-    {
-      method: "POST",
-      path: "/users/{userId}/calendar/events",
-      summary: "Create calendar event",
-      description: "Create a new calendar event.",
-      scopes: ["calendar:write:event:admin"],
-      parameters: [
-        {
-          name: "userId",
-          in: "path",
-          required: true,
-          type: "string",
-          description: "User ID or email address"
-        }
-      ],
-      requestBody: {
-        required: true,
-        example: {
-          "topic": "Team Meeting",
-          "start_time": "2024-01-15T10:00:00Z",
-          "duration": 60
-        }
-      }
-    }
-  ]
-});
-```
-
-### 3. グループ名の一覧
-
-`registerCategory()` の第1引数に使用できるグループ名:
-
-| グループ名 | 説明 |
-|-----------|------|
-| `Workplace` | Meetings, Team Chat, Phone, Calendar, Rooms, Clips等 |
-| `Business Services` | Webinars, Contact Center, Revenue Accelerator等 |
-| `Accounts` | Users, Accounts, Groups, Roles, SCIM等 |
-| `Build Platform` | Video SDK, Cobrowse SDK等 |
-| `Marketplace` | Apps等 |
-
-### 4. popup.htmlにスクリプトを追加
-
-`popup.html` の `<!-- API Specifications -->` セクションに新しいファイルを追加:
-
-```html
-<!-- API Specifications -->
-<script src="specs/index.js"></script>
-<!-- Workplace -->
-<script src="specs/workplace-meetings.js"></script>
-<script src="specs/workplace-calendar.js"></script>  <!-- 追加 -->
-...
-```
-
-### 5. エンドポイント定義のプロパティ
-
-| プロパティ | 型 | 必須 | 説明 |
-|-----------|------|------|------|
-| `method` | string | Yes | HTTP メソッド (GET, POST, PUT, PATCH, DELETE) |
-| `path` | string | Yes | APIパス（パスパラメータは `{paramName}` 形式） |
-| `summary` | string | Yes | APIの短い説明 |
-| `description` | string | Yes | APIの詳細説明 |
-| `scopes` | string[] | Yes | 必要なGranular Scopes |
-| `parameters` | array | No | パスパラメータとクエリパラメータ |
-| `requestBody` | object | No | リクエストボディ（POST/PUT/PATCH用） |
-
-### 6. パラメータ定義
-
-```javascript
-{
-  name: "paramName",      // パラメータ名
-  in: "path" | "query",   // パスパラメータ or クエリパラメータ
-  required: true | false, // 必須かどうか
-  type: "string" | "integer" | "boolean", // データ型
-  description: "説明",    // パラメータの説明
-  default: "value",       // デフォルト値（オプション）
-  enum: ["val1", "val2"]  // 選択肢（オプション）
-}
-```
+- キャッシュキー: `apiSpec_{category-slug}`
+- 有効期限: 7日間
+- 手動更新: 更新ボタンで強制再取得可能
 
 ## Granular Scopesの形式
 
-Granular Scopesは以下の形式で記述します:
+Granular Scopesは以下の形式で記述されています:
 
 ```
 {resource}:{permission}:{action}:{level}
@@ -240,6 +151,7 @@ Granular Scopesは以下の形式で記述します:
 - Client Secretは安全に保管してください
 - 本番環境のAPIを叩く際は十分注意してください
 - 拡張機能アイコンを再度クリックすると、既存のウィンドウにフォーカスします
+- API Spec取得には初回のみネットワーク接続が必要です
 
 ## ライセンス
 
