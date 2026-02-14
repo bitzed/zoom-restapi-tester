@@ -1,84 +1,84 @@
 # Zoom REST API Tester - Server to Server Ver
 
-Zoom REST APIをテストするためのChrome拡張機能です。Server-to-Server OAuth認証を使用してAPIリクエストを実行できます。
+A Chrome extension for testing Zoom REST APIs using Server-to-Server OAuth authentication.
 
-## 機能
+## Features
 
-- Server-to-Server OAuth認証によるアクセストークン取得
-- Zoom公式API Specから動的にAPI仕様を取得
-- 全35カテゴリ、数百のAPIエンドポイントを自動網羅
-- Swagger風のAPI一覧表示
-- カテゴリ別・検索によるAPIフィルタリング
-- パラメータ入力フォーム
-- APIリクエストの実行と結果表示
-- Granular Scopes対応
-- 独立ウィンドウで起動（サイズ制限なし）
-- API Specのキャッシュと自動更新
+- Server-to-Server OAuth access token management
+- Dynamic API spec loading from Zoom's official developer documentation
+- Automatic coverage of all 35 categories with hundreds of API endpoints
+- Swagger-like API reference UI
+- Filtering by category and search
+- Parameter input forms
+- API request execution with response display
+- Granular Scopes support
+- Standalone window (no popup size limits)
+- API spec caching with manual refresh
 
-## インストール方法
+## Installation
 
-1. このリポジトリをクローンまたはダウンロード
+1. Clone or download this repository
    ```bash
    git clone https://github.com/bitzed/zoom-restapi-tester.git
    ```
 
-2. Chromeで `chrome://extensions/` を開く
+2. Open `chrome://extensions/` in Chrome
 
-3. 右上の「デベロッパーモード」をONにする
+3. Enable "Developer mode" in the top right
 
-4. 「パッケージ化されていない拡張機能を読み込む」をクリック
+4. Click "Load unpacked"
 
-5. ダウンロードしたフォルダを選択
+5. Select the downloaded folder
 
-## 使用方法
+## Usage
 
-### 1. 認証情報の設定
+### 1. Configure Credentials
 
-1. 拡張機能アイコンをクリックして独立ウィンドウを開く
-2. 右上の歯車アイコン（Settings）をクリック
-3. Zoom Server-to-Server OAuthアプリの認証情報を入力:
-   - **Account ID**: ZoomアカウントID
-   - **Client ID**: OAuthアプリのクライアントID
-   - **Client Secret**: OAuthアプリのクライアントシークレット
-4. 「Save Settings」をクリック
+1. Click the extension icon to open the standalone window
+2. Click the gear icon (Settings) in the top right
+3. Enter your Zoom Server-to-Server OAuth app credentials:
+   - **Account ID**: Your Zoom Account ID
+   - **Client ID**: OAuth app Client ID
+   - **Client Secret**: OAuth app Client Secret
+4. Click "Save Settings"
 
-### 2. アクセストークンの取得
+### 2. Get Access Token
 
-1. 「Get Access Token」ボタンをクリック
-2. 認証成功後、ステータスが「Authenticated」に変わる
-3. トークンは自動的にローカルストレージに保存される（1時間有効）
+1. Click "Get Access Token"
+2. On success, the status changes to "Authenticated"
+3. The token is automatically stored in local storage (valid for 1 hour)
 
-### 3. APIのテスト
+### 3. Test APIs
 
-1. **Group** を選択（Workplace, Business Services, Accounts等）
-2. **Category** を選択（Meetings, Users, Phone等）
-   - 初回選択時、Zoom公式サイトからAPI Specを自動取得
-   - 取得したSpecはキャッシュされ、次回以降は即座に表示
-3. 検索でAPIを絞り込む
-4. テストしたいAPIをクリック
-5. 詳細パネルで:
-   - **Required Granular Scopes**: 必要なGranular Scopesを確認
-   - **Path Parameters**: パスパラメータを入力
-   - **Query Parameters**: クエリパラメータを入力
-   - **Request Body**: リクエストボディ（POST/PUT/PATCHの場合）を入力
-6. 「Execute Request」をクリック
-7. レスポンスが下部に表示される
+1. Select a **Group** (Workplace, Business Services, Accounts, etc.)
+2. Select a **Category** (Meetings, Users, Phone, etc.)
+   - On first selection, the API spec is automatically fetched from Zoom's official site
+   - Fetched specs are cached and loaded instantly on subsequent visits
+3. Use search to filter APIs
+4. Click an API to open its detail panel
+5. In the detail panel:
+   - **Required Granular Scopes**: Review the scopes your app needs
+   - **Path Parameters**: Fill in path parameters
+   - **Query Parameters**: Fill in query parameters
+   - **Request Body**: Enter JSON body (for POST/PUT/PATCH)
+6. Click "Execute Request"
+7. The response is displayed below
 
-### 4. API Specの更新
+### 4. Updating API Specs
 
-- カテゴリ選択後、更新ボタン（🔄）をクリックすると最新のSpecを再取得
-- キャッシュは7日間有効。期限切れ後は自動的に再取得
+- After selecting a category, click the refresh button to re-fetch the latest spec
+- Cache is valid for 7 days. Expired cache is automatically refreshed on next access
 
-## Zoom Server-to-Server OAuthアプリの作成
+## Creating a Zoom Server-to-Server OAuth App
 
-1. [Zoom App Marketplace](https://marketplace.zoom.us/) にログイン
-2. 「Develop」→「Build App」をクリック
-3. 「Server-to-Server OAuth」を選択して作成
-4. 必要なScopes（Granular Scopes）を追加:
-   - 例: `user:read:list_users:admin`（ユーザー一覧取得用）
-5. Account ID、Client ID、Client Secretをコピー
+1. Log in to [Zoom App Marketplace](https://marketplace.zoom.us/)
+2. Click "Develop" > "Build App"
+3. Select "Server-to-Server OAuth" and create the app
+4. Add the required Granular Scopes:
+   - Example: `user:read:list_users:admin` (for listing users)
+5. Copy the Account ID, Client ID, and Client Secret
 
-## 対応APIカテゴリ
+## Supported API Categories
 
 ### Workplace
 - Meetings, Team Chat, Phone, Mail, Calendar, Scheduler
@@ -100,59 +100,59 @@ Zoom REST APIをテストするためのChrome拡張機能です。Server-to-Ser
 ### Marketplace
 - Apps
 
-## プロジェクト構成
+## Project Structure
 
 ```
 zoom-restapi-tester/
-├── manifest.json          # Chrome拡張機能マニフェスト
-├── popup.html             # メインUI
-├── popup.js               # UIロジック
-├── api-spec-loader.js     # API Spec動的ローダー
-├── styles.css             # スタイルシート
-├── background.js          # Service Worker
-├── icons/                 # アイコン画像
+├── manifest.json          # Chrome extension manifest
+├── popup.html             # Main UI
+├── popup.js               # UI logic
+├── api-spec-loader.js     # Dynamic API spec loader
+├── styles.css             # Stylesheet
+├── background.js          # Service worker
+├── icons/                 # Extension icons
 │   ├── icon16.png
 │   ├── icon48.png
 │   └── icon128.png
 └── README.md
 ```
 
-## 技術詳細
+## Technical Details
 
-### API Spec取得の仕組み
+### How API Spec Loading Works
 
-1. ユーザーがカテゴリを選択
-2. `https://developers.zoom.us/api-hub/{category}/methods/endpoints.json` からOpenAPI 3.0形式のSpecを取得
-3. OpenAPI形式を内部形式にパースし、`chrome.storage.local` にキャッシュ
-4. Granular Scopes（4セグメント形式）のみを抽出して表示
+1. User selects a category
+2. Fetches OpenAPI 3.0 spec from `https://developers.zoom.us/api-hub/{category}/methods/endpoints.json`
+3. Parses the OpenAPI format into an internal representation and caches it in `chrome.storage.local`
+4. Extracts only Granular Scopes (4-segment format) for display
 
-### キャッシュ管理
+### Cache Management
 
-- キャッシュキー: `apiSpec_{category-slug}`
-- 有効期限: 7日間
-- 手動更新: 更新ボタンで強制再取得可能
+- Cache key: `apiSpec_{category-slug}`
+- Expiry: 7 days
+- Manual refresh: Force re-fetch via the refresh button
 
-## Granular Scopesの形式
+## Granular Scopes Format
 
-Granular Scopesは以下の形式で記述されています:
+Granular Scopes follow this pattern:
 
 ```
 {resource}:{permission}:{action}:{level}
 ```
 
-例:
-- `user:read:list_users:admin` - 管理者レベルでユーザー一覧を読み取る
-- `meeting:write:meeting:admin` - 管理者レベルでミーティングを作成/更新する
-- `phone:read:call_log:admin` - 管理者レベルで通話履歴を読み取る
+Examples:
+- `user:read:list_users:admin` - Read user list at admin level
+- `meeting:write:meeting:admin` - Create/update meetings at admin level
+- `phone:read:call_log:admin` - Read call logs at admin level
 
-## 注意事項
+## Notes
 
-- アクセストークンは1時間で期限切れになります
-- Client Secretは安全に保管してください
-- 本番環境のAPIを叩く際は十分注意してください
-- 拡張機能アイコンを再度クリックすると、既存のウィンドウにフォーカスします
-- API Spec取得には初回のみネットワーク接続が必要です
+- Access tokens expire after 1 hour
+- Keep your Client Secret secure
+- Exercise caution when making requests to production APIs
+- Clicking the extension icon again focuses the existing window
+- Network access is required only on the first spec fetch per category
 
-## ライセンス
+## License
 
 MIT License
