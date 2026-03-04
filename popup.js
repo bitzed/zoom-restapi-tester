@@ -695,7 +695,15 @@ async function executeRequest(endpoint, baseUrl) {
     }
 
     // Use background script to bypass CORS
+    console.log('[POPUP] Sending executeZoomRequest to background...');
+    console.log('[POPUP] URL:', url);
+    console.log('[POPUP] Method:', options.method);
+    console.log('[POPUP] Headers:', JSON.stringify(options.headers));
+    console.log('[POPUP] Body:', options.body || 'none');
+
     const result = await chrome.runtime.sendMessage({ action: 'executeZoomRequest', url, options });
+    console.log('[POPUP] Received result from background:', result);
+
     if (result.error) throw new Error(result.error);
     renderResponse(result.status, result.data, result.duration, result.ok);
 

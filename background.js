@@ -80,47 +80,80 @@ async function checkAndNotifyTokenExpiry() {
 
 // Message handling from popup
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  console.log('[BG] Message received:', request.action, request);
+
   if (request.action === 'getTokenStatus') {
-    getTokenStatus().then(sendResponse);
+    console.log('[BG] Getting token status...');
+    getTokenStatus().then(result => {
+      console.log('[BG] Token status result:', result);
+      sendResponse(result);
+    });
     return true; // Indicates async response
   }
 
   if (request.action === 'fetchZoomToken') {
-    fetchZoomToken(request.credentials).then(sendResponse);
+    console.log('[BG] Fetching Zoom token...');
+    fetchZoomToken(request.credentials).then(result => {
+      console.log('[BG] Token fetch result:', result.error ? result.error : 'success');
+      sendResponse(result);
+    });
     return true;
   }
 
   if (request.action === 'executeZoomRequest') {
-    executeZoomRequest(request.url, request.options).then(sendResponse);
+    console.log('[BG] Executing Zoom request:', request.url);
+    console.log('[BG] Request options:', JSON.stringify(request.options, null, 2));
+    executeZoomRequest(request.url, request.options).then(result => {
+      console.log('[BG] Request result:', result.error ? result.error : `status=${result.status}`);
+      sendResponse(result);
+    });
     return true;
   }
 
   if (request.action === 'fetchApiSpec') {
-    fetchApiSpec(request.url).then(sendResponse);
+    console.log('[BG] Fetching API spec:', request.url);
+    fetchApiSpec(request.url).then(result => {
+      console.log('[BG] API spec result:', result.error ? result.error : 'success');
+      sendResponse(result);
+    });
     return true;
   }
 });
 
 // Fetch API Spec from developers.zoom.us (runs in service worker to bypass CORS)
 async function fetchApiSpec(url) {
+  console.log('[BG] fetchApiSpec starting...');
+  console.log('[BG] Spec URL:', url);
+
   try {
+    console.log('[BG] Calling fetch for spec...');
     const response = await fetch(url);
+    console.log('[BG] Spec fetch response status:', response.status);
+
     if (!response.ok) {
+      console.error('[BG] Spec fetch failed:', response.status);
       return { error: `Failed to fetch: ${response.status}` };
     }
     const data = await response.json();
+    console.log('[BG] Spec parsed successfully');
     return { data };
   } catch (e) {
+    console.error('[BG] fetchApiSpec error:', e.message);
     return { error: e.message };
   }
 }
 
 // Fetch Zoom OAuth token (runs in service worker to bypass CORS)
 async function fetchZoomToken(credentials) {
+  console.log('[BG] fetchZoomToken starting...');
+  console.log('[BG] Account ID:', credentials?.accountId ? '(provided)' : '(missing)');
+  console.log('[BG] Client ID:', credentials?.clientId ? '(provided)' : '(missing)');
+
   try {
     const { accountId, clientId, clientSecret } = credentials;
     const basicAuth = btoa(`${clientId}:${clientSecret}`);
 
+    console.log('[BG] Calling OAuth token endpoint...');
     const response = await fetch('https://zoom.us/oauth/token', {
       method: 'POST',
       headers: {
@@ -130,33 +163,51 @@ async function fetchZoomToken(credentials) {
       body: `grant_type=account_credentials&account_id=${encodeURIComponent(accountId)}`
     });
 
+    console.log('[BG] OAuth response status:', response.status);
     const data = await response.json();
 
     if (!response.ok) {
+      console.error('[BG] OAuth failed:', data.reason || data.error_description || data.error);
       return { error: data.reason || data.error_description || data.error || 'Authentication failed' };
     }
 
+    console.log('[BG] OAuth token obtained successfully');
     return data;
   } catch (e) {
+    console.error('[BG] fetchZoomToken error:', e.message);
     return { error: e.message };
   }
 }
 
 // Execute Zoom API request (runs in service worker to bypass CORS)
 async function executeZoomRequest(url, options) {
+  console.log('[BG] executeZoomRequest starting...');
+  console.log('[BG] URL:', url);
+  console.log('[BG] Method:', options?.method || 'GET');
+  console.log('[BG] Headers:', JSON.stringify(options?.headers || {}));
+  console.log('[BG] Body:', options?.body ? options.body.substring(0, 500) : 'none');
+
   try {
     const startTime = Date.now();
+    console.log('[BG] Calling fetch...');
     const response = await fetch(url, options);
     const endTime = Date.now();
     const duration = endTime - startTime;
 
+    console.log('[BG] Fetch completed successfully');
+    console.log('[BG] Response status:', response.status);
+    console.log('[BG] Response ok:', response.ok);
+
     let data;
     const contentType = response.headers.get('content-type');
+    console.log('[BG] Content-Type:', contentType);
 
     if (contentType && contentType.includes('application/json')) {
       data = await response.json();
+      console.log('[BG] Parsed JSON response');
     } else {
       data = await response.text();
+      console.log('[BG] Got text response, length:', data.length);
     }
 
     return {
@@ -166,6 +217,8 @@ async function executeZoomRequest(url, options) {
       duration: duration
     };
   } catch (e) {
+    console.error('[BG] executeZoomRequest error:', e.message);
+    console.error('[BG] Error stack:', e.stack);
     return { error: e.message };
   }
 }
