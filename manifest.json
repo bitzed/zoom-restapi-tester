@@ -1,17 +1,25 @@
 {
   "manifest_version": 3,
   "name": "Zoom REST API Tester - Server to Server Ver",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Test Zoom REST APIs with Server-to-Server OAuth authentication",
   "permissions": [
     "storage",
-    "alarms"
+    "alarms",
+    "declarativeNetRequest"
   ],
   "host_permissions": [
     "https://zoom.us/*",
     "https://api.zoom.us/*",
     "https://developers.zoom.us/*"
   ],
+  "declarative_net_request": {
+    "rule_resources": [{
+      "id": "ruleset_1",
+      "enabled": true,
+      "path": "rules.json"
+    }]
+  },
   "action": {
     "default_icon": {
       "16": "icons/icon16.png",
