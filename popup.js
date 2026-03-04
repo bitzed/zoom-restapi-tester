@@ -199,27 +199,10 @@ async function authenticate() {
 }
 
 async function getAccessToken(credentials) {
-  const { accountId, clientId, clientSecret } = credentials;
-
-  // Base64 encode credentials
-  const basicAuth = btoa(`${clientId}:${clientSecret}`);
-
-  const response = await fetch('https://zoom.us/oauth/token', {
-    method: 'POST',
-    headers: {
-      'Authorization': `Basic ${basicAuth}`,
-      'Content-Type': 'application/x-www-form-urlencoded'
-    },
-    body: `grant_type=account_credentials&account_id=${encodeURIComponent(accountId)}`
-  });
-
-  const data = await response.json();
-
-  if (!response.ok) {
-    throw new Error(data.reason || data.error_description || data.error || 'Authentication failed');
-  }
-
-  return data;
+  // Use background script to bypass CORS
+  const result = await chrome.runtime.sendMessage({ action: 'fetchZoomToken', credentials });
+  if (result.error) throw new Error(result.error);
+  return result;
 }
 
 async function clearToken() {
@@ -711,21 +694,10 @@ async function executeRequest(endpoint, baseUrl) {
       }
     }
 
-    const startTime = Date.now();
-    const response = await fetch(url, options);
-    const endTime = Date.now();
-    const duration = endTime - startTime;
-
-    let responseData;
-    const contentType = response.headers.get('content-type');
-
-    if (contentType && contentType.includes('application/json')) {
-      responseData = await response.json();
-    } else {
-      responseData = await response.text();
-    }
-
-    renderResponse(response.status, responseData, duration, response.ok);
+    // Use background script to bypass CORS
+    const result = await chrome.runtime.sendMessage({ action: 'executeZoomRequest', url, options });
+    if (result.error) throw new Error(result.error);
+    renderResponse(result.status, result.data, result.duration, result.ok);
 
   } catch (error) {
     renderErrorResponse(error.message);
