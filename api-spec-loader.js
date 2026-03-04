@@ -234,13 +234,13 @@ function generateExampleFromSchema(schema) {
 async function fetchCategorySpec(slug, categoryName) {
   const url = buildSpecUrl(slug);
 
-  const response = await fetch(url);
-  if (!response.ok) {
-    throw new Error(`Failed to fetch spec for ${categoryName}: ${response.status}`);
+  // Use background script to bypass CORS
+  const result = await chrome.runtime.sendMessage({ action: 'fetchApiSpec', url });
+  if (result.error) {
+    throw new Error(`Failed to fetch spec for ${categoryName}: ${result.error}`);
   }
 
-  const openApiJson = await response.json();
-  return parseOpenAPISpec(openApiJson, categoryName);
+  return parseOpenAPISpec(result.data, categoryName);
 }
 
 /**
