@@ -94,7 +94,26 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     executeZoomRequest(request.url, request.options).then(sendResponse);
     return true;
   }
+
+  if (request.action === 'fetchApiSpec') {
+    fetchApiSpec(request.url).then(sendResponse);
+    return true;
+  }
 });
+
+// Fetch API Spec from developers.zoom.us (runs in service worker to bypass CORS)
+async function fetchApiSpec(url) {
+  try {
+    const response = await fetch(url);
+    if (!response.ok) {
+      return { error: `Failed to fetch: ${response.status}` };
+    }
+    const data = await response.json();
+    return { data };
+  } catch (e) {
+    return { error: e.message };
+  }
+}
 
 // Fetch Zoom OAuth token (runs in service worker to bypass CORS)
 async function fetchZoomToken(credentials) {
