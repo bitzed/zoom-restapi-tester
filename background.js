@@ -188,11 +188,8 @@ async function executeZoomRequest(url, options) {
   console.log('[BG] Body:', options?.body ? options.body.substring(0, 500) : 'none');
 
   try {
-    const startTime = Date.now();
     console.log('[BG] Calling fetch...');
     const response = await fetch(url, options);
-    const endTime = Date.now();
-    const duration = endTime - startTime;
 
     console.log('[BG] Fetch completed successfully');
     console.log('[BG] Response status:', response.status);
@@ -210,11 +207,14 @@ async function executeZoomRequest(url, options) {
       console.log('[BG] Got text response, length:', data.length);
     }
 
+    // Get x-zm-trackingid header
+    const trackingId = response.headers.get('x-zm-trackingid') || '';
+
     return {
       status: response.status,
       ok: response.ok,
       data: data,
-      duration: duration
+      trackingId: trackingId
     };
   } catch (e) {
     console.error('[BG] executeZoomRequest error:', e.message);

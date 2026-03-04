@@ -705,7 +705,7 @@ async function executeRequest(endpoint, baseUrl) {
     console.log('[POPUP] Received result from background:', result);
 
     if (result.error) throw new Error(result.error);
-    renderResponse(result.status, result.data, result.duration, result.ok);
+    renderResponse(result.status, result.data, result.trackingId, result.ok);
 
   } catch (error) {
     renderErrorResponse(error.message);
@@ -715,13 +715,13 @@ async function executeRequest(endpoint, baseUrl) {
   }
 }
 
-function renderResponse(statusCode, data, duration, isSuccess) {
+function renderResponse(statusCode, data, trackingId, isSuccess) {
   const responseContent = document.getElementById('response-content');
 
   let html = `
     <div class="response-status">
       <span class="status-code ${isSuccess ? 'success' : 'error'}">${statusCode}</span>
-      <span class="response-time">${duration}ms</span>
+      ${trackingId ? `<span class="tracking-id" title="x-zm-trackingid">${trackingId}</span>` : ''}
     </div>
   `;
 
