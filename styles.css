@@ -666,6 +666,17 @@ body {
   font-size: 13px;
 }
 
+.tracking-id {
+  color: #666;
+  font-size: 12px;
+  font-family: 'Monaco', 'Menlo', monospace;
+  background-color: #f0f0f0;
+  padding: 2px 8px;
+  border-radius: 4px;
+  user-select: all;
+  cursor: text;
+}
+
 .response-body {
   background-color: #1e1e1e;
   color: #d4d4d4;
