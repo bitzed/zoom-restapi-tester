@@ -84,7 +84,72 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     getTokenStatus().then(sendResponse);
     return true; // Indicates async response
   }
+
+  if (request.action === 'fetchZoomToken') {
+    fetchZoomToken(request.credentials).then(sendResponse);
+    return true;
+  }
+
+  if (request.action === 'executeZoomRequest') {
+    executeZoomRequest(request.url, request.options).then(sendResponse);
+    return true;
+  }
 });
+
+// Fetch Zoom OAuth token (runs in service worker to bypass CORS)
+async function fetchZoomToken(credentials) {
+  try {
+    const { accountId, clientId, clientSecret } = credentials;
+    const basicAuth = btoa(`${clientId}:${clientSecret}`);
+
+    const response = await fetch('https://zoom.us/oauth/token', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Basic ${basicAuth}`,
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      body: `grant_type=account_credentials&account_id=${encodeURIComponent(accountId)}`
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      return { error: data.reason || data.error_description || data.error || 'Authentication failed' };
+    }
+
+    return data;
+  } catch (e) {
+    return { error: e.message };
+  }
+}
+
+// Execute Zoom API request (runs in service worker to bypass CORS)
+async function executeZoomRequest(url, options) {
+  try {
+    const startTime = Date.now();
+    const response = await fetch(url, options);
+    const endTime = Date.now();
+    const duration = endTime - startTime;
+
+    let data;
+    const contentType = response.headers.get('content-type');
+
+    if (contentType && contentType.includes('application/json')) {
+      data = await response.json();
+    } else {
+      data = await response.text();
+    }
+
+    return {
+      status: response.status,
+      ok: response.ok,
+      data: data,
+      duration: duration
+    };
+  } catch (e) {
+    return { error: e.message };
+  }
+}
 
 async function getTokenStatus() {
   const result = await chrome.storage.local.get('zoomToken');
