@@ -13,6 +13,7 @@ const closeSettingsBtn = document.getElementById('close-settings-btn');
 const saveSettingsBtn = document.getElementById('save-settings-btn');
 const clearSettingsBtn = document.getElementById('clear-settings-btn');
 const toggleSecretBtn = document.getElementById('toggle-secret');
+const toggleApiSecretBtn = document.getElementById('toggle-api-secret');
 
 const authBtn = document.getElementById('auth-btn');
 const clearTokenBtn = document.getElementById('clear-token-btn');
@@ -53,6 +54,7 @@ function setupEventListeners() {
   saveSettingsBtn.addEventListener('click', saveSettings);
   clearSettingsBtn.addEventListener('click', clearSettings);
   toggleSecretBtn.addEventListener('click', toggleSecretVisibility);
+  toggleApiSecretBtn.addEventListener('click', toggleApiSecretVisibility);
 
   // Modal background click
   settingsModal.addEventListener('click', (e) => {
@@ -82,6 +84,8 @@ async function openSettings() {
   document.getElementById('account-id').value = credentials.accountId || '';
   document.getElementById('client-id').value = credentials.clientId || '';
   document.getElementById('client-secret').value = credentials.clientSecret || '';
+  document.getElementById('api-key').value = credentials.apiKey || '';
+  document.getElementById('api-secret').value = credentials.apiSecret || '';
   hideSettingsMessage();
 }
 
@@ -93,14 +97,16 @@ async function saveSettings() {
   const accountId = document.getElementById('account-id').value.trim();
   const clientId = document.getElementById('client-id').value.trim();
   const clientSecret = document.getElementById('client-secret').value.trim();
+  const apiKey = document.getElementById('api-key').value.trim();
+  const apiSecret = document.getElementById('api-secret').value.trim();
 
   if (!accountId || !clientId || !clientSecret) {
-    showSettingsMessage('Please fill in all fields', 'error');
+    showSettingsMessage('Please fill in Server-to-Server OAuth fields', 'error');
     return;
   }
 
   await chrome.storage.local.set({
-    zoomCredentials: { accountId, clientId, clientSecret }
+    zoomCredentials: { accountId, clientId, clientSecret, apiKey, apiSecret }
   });
 
   showSettingsMessage('Settings saved successfully', 'success');
@@ -116,6 +122,8 @@ async function clearSettings() {
   document.getElementById('account-id').value = '';
   document.getElementById('client-id').value = '';
   document.getElementById('client-secret').value = '';
+  document.getElementById('api-key').value = '';
+  document.getElementById('api-secret').value = '';
 
   currentToken = null;
   tokenExpiresAt = null;
@@ -126,6 +134,11 @@ async function clearSettings() {
 
 function toggleSecretVisibility() {
   const secretInput = document.getElementById('client-secret');
+  secretInput.type = secretInput.type === 'password' ? 'text' : 'password';
+}
+
+function toggleApiSecretVisibility() {
+  const secretInput = document.getElementById('api-secret');
   secretInput.type = secretInput.type === 'password' ? 'text' : 'password';
 }
 
@@ -484,24 +497,38 @@ function toggleCategory(headerEl) {
 }
 
 // API Detail Panel
-function openEndpointDetail(endpoint) {
+async function openEndpointDetail(endpoint) {
   panelTitle.textContent = endpoint.summary;
   apiDetailPanel.style.display = 'flex';
 
-  renderEndpointDetail(endpoint);
+  await renderEndpointDetail(endpoint);
 }
 
 function closeDetailPanel() {
   apiDetailPanel.style.display = 'none';
 }
 
-function renderEndpointDetail(endpoint) {
+async function renderEndpointDetail(endpoint) {
   const hasBody = endpoint.requestBody;
   const pathParams = endpoint.parameters.filter(p => p.in === 'path');
   const queryParams = endpoint.parameters.filter(p => p.in === 'query');
 
   // Determine base URL
   const baseUrl = currentSpec?.servers?.[0]?.url || 'https://api.zoom.us/v2';
+
+  // Check authentication status for button state
+  const isBuildPlatform = isBuildPlatformGroup();
+  let canExecute = false;
+  let disabledReason = '';
+
+  if (isBuildPlatform) {
+    const credentials = await getCredentials();
+    canExecute = !!(credentials.apiKey && credentials.apiSecret);
+    disabledReason = 'Please configure API Key/Secret in Settings';
+  } else {
+    canExecute = !!currentToken;
+    disabledReason = 'Please authenticate first';
+  }
 
   let html = `
     <div class="api-detail">
@@ -562,7 +589,7 @@ function renderEndpointDetail(endpoint) {
   // Execute Button
   html += `
     <div class="execute-section">
-      <button id="execute-btn" class="btn btn-execute" ${!currentToken ? 'disabled title="Please authenticate first"' : ''}>
+      <button id="execute-btn" class="btn btn-execute" ${!canExecute ? `disabled title="${disabledReason}"` : ''}>
         Execute Request
       </button>
     </div>
@@ -621,11 +648,28 @@ function renderParamInput(param, type) {
   `;
 }
 
+// Check if current group is Build Platform (uses JWT auth)
+function isBuildPlatformGroup() {
+  const selectedGroup = groupSelect.value;
+  return selectedGroup === 'Build Platform';
+}
+
 // API Execution
 async function executeRequest(endpoint, baseUrl) {
-  if (!currentToken) {
-    alert('Please authenticate first.');
-    return;
+  const isBuildPlatform = isBuildPlatformGroup();
+
+  // Check authentication
+  if (isBuildPlatform) {
+    const credentials = await getCredentials();
+    if (!credentials.apiKey || !credentials.apiSecret) {
+      alert('Please configure Build Platform API Key and Secret in Settings.');
+      return;
+    }
+  } else {
+    if (!currentToken) {
+      alert('Please authenticate first.');
+      return;
+    }
   }
 
   const executeBtn = document.getElementById('execute-btn');
@@ -673,11 +717,21 @@ async function executeRequest(endpoint, baseUrl) {
       url += '?' + queryString;
     }
 
+    // Determine authorization header based on API type
+    let authHeader;
+    if (isBuildPlatform) {
+      const credentials = await getCredentials();
+      const jwt = await JWTUtils.generateJWT(credentials.apiKey, credentials.apiSecret);
+      authHeader = `Bearer ${jwt}`;
+    } else {
+      authHeader = `Bearer ${currentToken}`;
+    }
+
     // Prepare request options
     const options = {
       method: endpoint.method,
       headers: {
-        'Authorization': `Bearer ${currentToken}`,
+        'Authorization': authHeader,
         'Content-Type': 'application/json'
       }
     };
