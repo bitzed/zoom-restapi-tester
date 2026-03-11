@@ -50,6 +50,7 @@ const API_CATEGORIES = {
     {
       name: "Build Platform",
       categories: [
+        { name: "AI Services", slug: "ai-services" },
         { name: "Video SDK", slug: "video-sdk" },
         { name: "Cobrowse SDK", slug: "cobrowse-sdk" }
       ]
