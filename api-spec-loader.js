@@ -7,7 +7,7 @@ const API_CATEGORIES = {
       name: "Workplace",
       categories: [
         { name: "Meetings", slug: "meetings" },
-        { name: "Team Chat", slug: "team-chat" },
+        { name: "Chat", slug: "chat" },
         { name: "Phone", slug: "phone" },
         { name: "Mail", slug: "mail" },
         { name: "Calendar", slug: "calendar" },
