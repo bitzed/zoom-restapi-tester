@@ -100,8 +100,14 @@ async function saveSettings() {
   const apiKey = document.getElementById('api-key').value.trim();
   const apiSecret = document.getElementById('api-secret').value.trim();
 
-  if (!accountId || !clientId || !clientSecret) {
-    showSettingsMessage('Please fill in Server-to-Server OAuth fields', 'error');
+  const hasS2S = accountId && clientId && clientSecret;
+  const hasBuildPlatform = apiKey && apiSecret;
+
+  if (!hasS2S && !hasBuildPlatform) {
+    showSettingsMessage(
+      'Please fill in either Server-to-Server OAuth (Account ID / Client ID / Client Secret) or Build Platform (API Key / Secret) credentials.',
+      'error'
+    );
     return;
   }
 
@@ -537,8 +543,9 @@ async function renderEndpointDetail(endpoint) {
         <span class="endpoint-path">${endpoint.path}</span>
       </div>
 
-      <p class="description">${endpoint.description || endpoint.summary}</p>
+      <div class="description">${renderMarkdown(endpoint.description || endpoint.summary)}</div>
 
+      ${isBuildPlatform ? '' : `
       <!-- Required Scopes -->
       <div class="scopes-section">
         <h4>Required Granular Scopes</h4>
@@ -551,6 +558,7 @@ async function renderEndpointDetail(endpoint) {
           <p style="font-size: 12px; color: #666;">No granular scopes found in documentation. Check the <a href="https://developers.zoom.us/docs/api/" target="_blank">official docs</a>.</p>
         `}
       </div>
+      `}
   `;
 
   // Path Parameters
@@ -846,6 +854,37 @@ function escapeHtml(text) {
   const div = document.createElement('div');
   div.textContent = text;
   return div.innerHTML;
+}
+
+// Minimal Markdown renderer for API description text.
+// Handles inline code, links, and bold found in Zoom OpenAPI
+// descriptions. Escapes HTML first to prevent XSS.
+function renderMarkdown(text) {
+  if (!text) return '';
+
+  let html = escapeHtml(text);
+
+  // Inline code: `code`
+  html = html.replace(/`([^`\n]+)`/g, '<code>$1</code>');
+
+  // Links: [label](url)
+  html = html.replace(
+    /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g,
+    '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>'
+  );
+
+  // Bold: **text** (non-greedy)
+  html = html.replace(/\*\*([^*]+?)\*\*/g, '<strong>$1</strong>');
+
+  // Bullet markers used inline in Zoom descriptions (" * item"):
+  // render each as a line break + bullet glyph so they look like a list
+  // without the risk of mis-grouping trailing prose.
+  html = html.replace(/(^|\s)\*\s+/g, '$1<br>&bull; ');
+
+  // Preserve real newlines as line breaks; collapse multiple blank lines.
+  html = html.replace(/\n{2,}/g, '<br><br>').replace(/\n/g, '<br>');
+
+  return html;
 }
 
 // Utility Functions
