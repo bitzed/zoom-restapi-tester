@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Zoom REST API Tester - Server to Server Ver",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "Test Zoom REST APIs with Server-to-Server OAuth authentication",
   "permissions": [
     "storage",
