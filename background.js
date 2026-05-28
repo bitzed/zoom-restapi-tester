@@ -38,12 +38,36 @@ chrome.windows.onRemoved.addListener((windowId) => {
   }
 });
 
+// Legacy cache keys from renamed categories (slug changed upstream)
+const LEGACY_CACHE_SLUGS = ['zoom-docs'];
+
+async function cleanupLegacyCache() {
+  const keysToRemove = LEGACY_CACHE_SLUGS.map(slug => `apiSpec_${slug}`);
+  await chrome.storage.local.remove(keysToRemove);
+
+  const result = await chrome.storage.local.get('apiSpecMetadata');
+  const metadata = result.apiSpecMetadata;
+  if (!metadata) return;
+
+  let changed = false;
+  for (const slug of LEGACY_CACHE_SLUGS) {
+    if (slug in metadata) {
+      delete metadata[slug];
+      changed = true;
+    }
+  }
+  if (changed) {
+    await chrome.storage.local.set({ apiSpecMetadata: metadata });
+  }
+}
+
 // Listen for extension installation
-chrome.runtime.onInstalled.addListener((details) => {
+chrome.runtime.onInstalled.addListener(async (details) => {
   if (details.reason === 'install') {
     console.log('Zoom REST API Tester installed');
   } else if (details.reason === 'update') {
     console.log('Zoom REST API Tester updated to version', chrome.runtime.getManifest().version);
+    await cleanupLegacyCache();
   }
 
   // Create token expiration check alarm

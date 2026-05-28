@@ -18,7 +18,7 @@ const API_CATEGORIES = {
         { name: "CRC", slug: "crc" },
         { name: "Chatbot", slug: "chatbot" },
         { name: "AI Companion", slug: "ai-companion" },
-        { name: "Zoom Docs", slug: "zoom-docs" },
+        { name: "Canvas", slug: "canvas" },
         { name: "Tasks", slug: "tasks" }
       ]
     },
@@ -35,7 +35,8 @@ const API_CATEGORIES = {
         { name: "Commerce", slug: "commerce" },
         { name: "Healthcare", slug: "healthcare" },
         { name: "Video Management", slug: "video-management" },
-        { name: "Auto Dialer", slug: "auto-dialer" }
+        { name: "Auto Dialer", slug: "auto-dialer" },
+        { name: "Customer Managed Keys Hybrid", slug: "customer-managed-keys-hybrid" }
       ]
     },
     {

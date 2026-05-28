@@ -87,13 +87,13 @@ A Chrome extension for testing Zoom REST APIs using Server-to-Server OAuth authe
 ### Workplace
 - Meetings, Team Chat, Phone, Mail, Calendar, Scheduler
 - Rooms, Clips, Whiteboard, CRC, Chatbot
-- AI Companion, Zoom Docs, Tasks
+- AI Companion, Canvas, Tasks
 
 ### Business Services
 - Contact Center, Webinars Plus & Events, Virtual Agent
 - Revenue Accelerator, Number Management, Quality Management
 - Workforce Management, Commerce, Healthcare
-- Video Management, Auto Dialer
+- Video Management, Auto Dialer, Customer Managed Keys Hybrid
 
 ### Accounts
 - Users, Accounts, QSS, SCIM 2
