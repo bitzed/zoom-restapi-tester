@@ -19,7 +19,8 @@ const API_CATEGORIES = {
         { name: "Chatbot", slug: "chatbot" },
         { name: "AI Companion", slug: "ai-companion" },
         { name: "Canvas", slug: "canvas" },
-        { name: "Tasks", slug: "tasks" }
+        { name: "Tasks", slug: "tasks" },
+        { name: "My Notes", slug: "my-notes" }
       ]
     },
     {

@@ -85,9 +85,9 @@ A Chrome extension for testing Zoom REST APIs using Server-to-Server OAuth authe
 ## Supported API Categories
 
 ### Workplace
-- Meetings, Team Chat, Phone, Mail, Calendar, Scheduler
+- Meetings, Chat, Phone, Mail, Calendar, Scheduler
 - Rooms, Clips, Whiteboard, CRC, Chatbot
-- AI Companion, Canvas, Tasks
+- AI Companion, Canvas, Tasks, My Notes
 
 ### Business Services
 - Contact Center, Webinars Plus & Events, Virtual Agent
@@ -99,7 +99,7 @@ A Chrome extension for testing Zoom REST APIs using Server-to-Server OAuth authe
 - Users, Accounts, QSS, SCIM 2
 
 ### Build Platform
-- Video SDK, Cobrowse SDK
+- AI Services, Video SDK, Cobrowse SDK
 
 ### Marketplace
 - Apps
