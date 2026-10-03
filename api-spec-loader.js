@@ -70,8 +70,8 @@ const CACHE_KEY_PREFIX = 'apiSpec_';
 const CACHE_METADATA_KEY = 'apiSpecMetadata';
 const CACHE_EXPIRY_DAYS = 7;
 
-// API Hub base URL
-const API_HUB_BASE_URL = 'https://developers.zoom.us/api-hub';
+// OpenAPI spec base URL (the "Download OpenAPI" endpoint on developers.zoom.us)
+const API_HUB_BASE_URL = 'https://developers.zoom.us/api/zoap';
 
 /**
  * Get all category groups
@@ -97,10 +97,10 @@ function getAllCategories() {
 }
 
 /**
- * Build the endpoints.json URL for a category
+ * Build the OpenAPI spec URL for a category
  */
 function buildSpecUrl(slug) {
-  return `${API_HUB_BASE_URL}/${slug}/methods/endpoints.json`;
+  return `${API_HUB_BASE_URL}/${slug}/methods`;
 }
 
 /**
