@@ -19,7 +19,8 @@ const API_CATEGORIES = {
         { name: "Chatbot", slug: "chatbot" },
         { name: "AI Companion", slug: "ai-companion" },
         { name: "Canvas", slug: "canvas" },
-        { name: "Tasks", slug: "tasks" }
+        { name: "Tasks", slug: "tasks" },
+        { name: "My Notes", slug: "my-notes" }
       ]
     },
     {
@@ -71,13 +72,14 @@ const CACHE_METADATA_KEY = 'apiSpecMetadata';
 const CACHE_EXPIRY_DAYS = 7;
 
 // OpenAPI spec URL candidates on developers.zoom.us.
-// The docs site has switched between two layouts (and been rolled back), so
-// every candidate is tried in order until one returns a valid spec.
+// The docs site is migrating to the /api/zoap layout; the legacy /api-hub
+// layout is the temporary rollback target. Try the forward-looking zoap URL
+// first and fall back to api-hub when it fails, until one returns a valid spec.
 const SPEC_URL_BUILDERS = [
-  // Legacy API Hub layout
-  slug => `https://developers.zoom.us/api-hub/${slug}/methods/endpoints.json`,
-  // Redesigned docs layout ("Download OpenAPI" link)
-  slug => `https://developers.zoom.us/api/zoap/${slug}/methods`
+  // Redesigned docs layout ("Download OpenAPI" link) — the future default
+  slug => `https://developers.zoom.us/api/zoap/${slug}/methods`,
+  // Legacy API Hub layout — fallback while zoap is rolled back
+  slug => `https://developers.zoom.us/api-hub/${slug}/methods/endpoints.json`
 ];
 
 // Index of the candidate that worked last, tried first on the next fetch
