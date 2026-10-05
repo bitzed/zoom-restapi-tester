@@ -70,8 +70,18 @@ const CACHE_KEY_PREFIX = 'apiSpec_';
 const CACHE_METADATA_KEY = 'apiSpecMetadata';
 const CACHE_EXPIRY_DAYS = 7;
 
-// OpenAPI spec base URL (the "Download OpenAPI" endpoint on developers.zoom.us)
-const API_HUB_BASE_URL = 'https://developers.zoom.us/api/zoap';
+// OpenAPI spec URL candidates on developers.zoom.us.
+// The docs site has switched between two layouts (and been rolled back), so
+// every candidate is tried in order until one returns a valid spec.
+const SPEC_URL_BUILDERS = [
+  // Legacy API Hub layout
+  slug => `https://developers.zoom.us/api-hub/${slug}/methods/endpoints.json`,
+  // Redesigned docs layout ("Download OpenAPI" link)
+  slug => `https://developers.zoom.us/api/zoap/${slug}/methods`
+];
+
+// Index of the candidate that worked last, tried first on the next fetch
+let preferredSpecUrlIndex = 0;
 
 /**
  * Get all category groups
@@ -97,10 +107,23 @@ function getAllCategories() {
 }
 
 /**
- * Build the OpenAPI spec URL for a category
+ * Build the candidate spec URLs for a category, last working layout first
  */
-function buildSpecUrl(slug) {
-  return `${API_HUB_BASE_URL}/${slug}/methods`;
+function buildSpecUrls(slug) {
+  const order = SPEC_URL_BUILDERS.map((_, i) => i);
+  if (preferredSpecUrlIndex > 0 && preferredSpecUrlIndex < order.length) {
+    order.splice(preferredSpecUrlIndex, 1);
+    order.unshift(preferredSpecUrlIndex);
+  }
+  return order.map(index => ({ index, url: SPEC_URL_BUILDERS[index](slug) }));
+}
+
+/**
+ * Check that a fetched document looks like an OpenAPI spec
+ */
+function isValidSpec(data) {
+  return !!data && typeof data === 'object' &&
+    !!data.paths && typeof data.paths === 'object';
 }
 
 /**
@@ -234,15 +257,28 @@ function generateExampleFromSchema(schema) {
  * Fetch and parse spec for a category
  */
 async function fetchCategorySpec(slug, categoryName) {
-  const url = buildSpecUrl(slug);
+  const errors = [];
 
-  // Use background script to bypass CORS
-  const result = await chrome.runtime.sendMessage({ action: 'fetchApiSpec', url });
-  if (result.error) {
-    throw new Error(`Failed to fetch spec for ${categoryName}: ${result.error}`);
+  for (const { index, url } of buildSpecUrls(slug)) {
+    let result;
+    try {
+      // Use background script to bypass CORS
+      result = await chrome.runtime.sendMessage({ action: 'fetchApiSpec', url });
+    } catch (e) {
+      result = { error: e.message };
+    }
+
+    if (result && !result.error && isValidSpec(result.data)) {
+      preferredSpecUrlIndex = index;
+      return parseOpenAPISpec(result.data, categoryName);
+    }
+
+    const reason = (result && result.error) || 'Not an OpenAPI spec';
+    console.warn(`Spec fetch failed for ${url}: ${reason}`);
+    errors.push(reason);
   }
 
-  return parseOpenAPISpec(result.data, categoryName);
+  throw new Error(`Failed to fetch spec for ${categoryName}: ${errors.join(' / ')}`);
 }
 
 /**
@@ -352,6 +388,6 @@ window.ApiSpecLoader = {
   getCacheMetadata,
   clearAllCache,
   clearCategoryCache,
-  buildSpecUrl,
+  buildSpecUrls,
   CACHE_EXPIRY_DAYS
 };
