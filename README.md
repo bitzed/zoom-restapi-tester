@@ -126,7 +126,7 @@ zoom-restapi-tester/
 ### How API Spec Loading Works
 
 1. User selects a category
-2. Fetches OpenAPI 3.0 spec from `https://developers.zoom.us/api-hub/{category}/methods/endpoints.json`
+2. Fetches OpenAPI 3.0 spec from `https://developers.zoom.us/api-hub/{category}/methods/endpoints.json`, falling back to `https://developers.zoom.us/api/zoap/{category}/methods` (whichever layout the docs site currently serves)
 3. Parses the OpenAPI format into an internal representation and caches it in `chrome.storage.local`
 4. Extracts only Granular Scopes (4-segment format) for display
 
